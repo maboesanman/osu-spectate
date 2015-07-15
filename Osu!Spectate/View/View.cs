@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Osu_Spectate.View
+namespace OsuSpectate.View
 {
     interface View
     {

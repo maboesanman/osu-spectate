@@ -7,7 +7,7 @@
     <ProjectGuid>{240DE377-94F5-404E-9CAE-D9F723316FAD}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Osu_Spectate</RootNamespace>
+    <RootNamespace>OsuSpectate</RootNamespace>
     <AssemblyName>Osu!Spectate</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -32,8 +32,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NAudio">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Naudio\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\OpenTK\1.1\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="osu!ReplayAPI">
+      <HintPath>..\..\OsuReplayViewer\o!RA\DLLs\osu!ReplayAPI.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,12 +52,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Audio\AudioPlayer.cs" />
+    <Compile Include="Beatmap\Curve.cs" />
     <Compile Include="Beatmap\OsuStandardBeatmap.cs" />
+    <Compile Include="GameplaySource\OsuStandardReplay.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameplaySource\OsuStandardGameplayInput.cs" />
+    <Compile Include="Skin\OsuSkin.cs" />
+    <Compile Include="View\CurrentTimeView.cs" />
+    <Compile Include="View\GameplayView.cs" />
+    <Compile Include="View\SongBackgroundView.cs" />
+    <Compile Include="View\SongProgressView.cs" />
+    <Compile Include="View\SongTitleDifficultyScrollView.cs" />
+    <Compile Include="View\SongTitleScrollView.cs" />
+    <Compile Include="View\StaticBackgroundView.cs" />
+    <Compile Include="View\StaticImageView.cs" />
     <Compile Include="View\View.cs" />
     <Compile Include="View\ViewArrangement.cs" />
+    <Compile Include="View\ViewContainer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

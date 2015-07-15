@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OsuSpectate.View
+using ReplayAPI;
+
+namespace OsuSpectate.GameplaySource
 {
-    class ViewArrangement
+    class OsuStandardReplay : Replay, OsuStandardGameplayInput
     {
     }
 }

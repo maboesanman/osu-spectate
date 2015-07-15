@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OsuSpectate.View
+namespace OsuSpectate.Skin
 {
-    class ViewArrangement
+    class OsuSkin
     {
     }
 }

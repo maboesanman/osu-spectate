@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OsuSpectate.View
+namespace OsuSpectate.Beatmap
 {
-    class ViewArrangement
+    abstract class Curve
     {
     }
 }
