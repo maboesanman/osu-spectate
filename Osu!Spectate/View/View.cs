@@ -8,5 +8,6 @@ namespace OsuSpectate.View
 {
     public interface View
     {
+        void Draw(TimeSpan time, float x, float y, float width, float height, int windowWidth, int windowHeight);
     }
 }

@@ -16,7 +16,7 @@ namespace OsuSpectate.GameplaySource
 {
     public interface RenderObject
     {
-        public string getType();
+        string getType();
     }
     public class RenderHitCircle : RenderObject
     {
@@ -25,7 +25,7 @@ namespace OsuSpectate.GameplaySource
         {
             HitCircle = h;
         }
-        public override string getType()
+        public string getType()
         {
             return "HitCircle";
         }
@@ -83,7 +83,7 @@ namespace OsuSpectate.GameplaySource
 
 
         }
-        public override string getType()
+        public string getType()
         {
             return "Slider";
         }
@@ -94,7 +94,7 @@ namespace OsuSpectate.GameplaySource
     }
     public class RenderSpinner : RenderObject
     {
-        public override string getType()
+        public string getType()
         {
             return "Spinner";
         }

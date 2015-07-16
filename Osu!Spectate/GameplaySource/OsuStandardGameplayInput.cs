@@ -16,18 +16,18 @@ namespace OsuSpectate.GameplaySource
 {
     public interface OsuStandardGameplayInput
     {
-        public GameplayFrame GetGameplayFrame(TimeSpan time);
-        public GameplayFrame GetGameplayFrame(long milliseconds);
-        public string GetPlayerName();
-        public OsuStandardBeatmap GetBeatmap();
-        public Mods GetMods();
-        public ReplayFrame GetReplayFrame(TimeSpan time);
-        public ReplayFrame GetReplayFrame(long milliseconds);
-        public TimeSpan GetOD300Milliseconds();
-        public TimeSpan GetOD100Milliseconds();
-        public TimeSpan GetOD50Milliseconds();
-        public TimeSpan GetARMilliseconds();
-        public float GetCSRadius();
-        public OsuStandardEventList GetEventList();
+        GameplayFrame GetGameplayFrame(TimeSpan time);
+        GameplayFrame GetGameplayFrame(long milliseconds);
+        string GetPlayerName();
+        OsuStandardBeatmap GetBeatmap();
+        Mods GetMods();
+        ReplayFrame GetReplayFrame(TimeSpan time);
+        ReplayFrame GetReplayFrame(long milliseconds);
+        TimeSpan GetOD300Milliseconds();
+        TimeSpan GetOD100Milliseconds();
+        TimeSpan GetOD50Milliseconds();
+        TimeSpan GetARMilliseconds();
+        float GetCSRadius();
+        OsuStandardEventList GetEventList();
     }
 }
