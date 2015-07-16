@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OsuSpectate.Audio
 {
-    class AudioPlayer
+    public class AudioPlayer
     {
     }
 }

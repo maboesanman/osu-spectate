@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OsuSpectate.View
 {
-    class StaticImageView : View
+    public class StaticImageView : View
     {
     }
 }

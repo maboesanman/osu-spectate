@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OsuSpectate.View
 {
-    class SongBackgroundView : View
+    public class SongBackgroundView : View
     {
     }
 }

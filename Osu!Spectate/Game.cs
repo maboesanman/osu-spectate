@@ -16,7 +16,7 @@ using OsuSpectate.View;
 
 namespace OsuSpectate
 {
-    class Game : GameWindow
+    public class Game : GameWindow
     {
         List<OsuStandardGameplayInput> GameplayInputList;
         

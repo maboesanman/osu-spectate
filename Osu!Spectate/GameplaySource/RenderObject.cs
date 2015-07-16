@@ -21,7 +21,7 @@ namespace OsuSpectate.GameplaySource
     public class RenderHitCircle : RenderObject
     {
         public OsuStandardHitCircle HitCircle;
-        public RenderHitCircle(OsuStandardHitCircle h, OsuStandardReplay r)
+        public RenderHitCircle(OsuStandardHitCircle h, OsuStandardGameplayInput r)
         {
             HitCircle = h;
         }
@@ -38,7 +38,7 @@ namespace OsuSpectate.GameplaySource
         public float width;
         public float height;
         public int SliderBorderTexture;
-        public RenderSlider(OsuStandardSlider s, OsuStandardReplay r)
+        public RenderSlider(OsuStandardSlider s, OsuStandardGameplayInput r)
         {
             Slider = s;
 

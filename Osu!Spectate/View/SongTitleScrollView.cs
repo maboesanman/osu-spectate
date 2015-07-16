@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OsuSpectate.View
 {
-    class SongTitleScrollView : View
+    public class SongTitleScrollView : View
     {
     }
 }

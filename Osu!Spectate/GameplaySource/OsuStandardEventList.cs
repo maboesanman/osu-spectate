@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OsuSpectate.GameplaySource
 {
-    class OsuStandardEventList
+    public class OsuStandardEventList
     {
     }
 }

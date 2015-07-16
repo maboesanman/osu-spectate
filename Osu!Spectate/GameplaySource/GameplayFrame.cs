@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OsuSpectate.GameplaySource
 {
-    struct GameplayFrame
+    public struct GameplayFrame
     {
         public ushort Count100;
         public ushort Count300;

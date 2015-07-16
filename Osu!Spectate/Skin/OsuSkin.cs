@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OsuSpectate.Skin
 {
-    class OsuSkin
+    public class OsuSkin
     {
     }
 }

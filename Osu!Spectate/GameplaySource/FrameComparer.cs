@@ -8,21 +8,21 @@ using ReplayAPI;
 
 namespace OsuSpectate.GameplaySource
 {
-    class ReplayFrameComparer : IComparer<ReplayFrame>
+    public class ReplayFrameComparer : IComparer<ReplayFrame>
     {
         public int Compare(ReplayFrame Frame1, ReplayFrame Frame2)
         {
             return Frame1.Time.CompareTo(Frame2.Time);
         }
     }
-    class LifeFrameComparer : IComparer<LifeFrame>
+    public class LifeFrameComparer : IComparer<LifeFrame>
     {
         public int Compare(LifeFrame Frame1, LifeFrame Frame2)
         {
             return Frame1.Time.CompareTo(Frame2.Time);
         }
     }
-    class GameplayFrameComparer : IComparer<GameplayFrame>
+    public class GameplayFrameComparer : IComparer<GameplayFrame>
     {
         public int Compare(GameplayFrame Frame1, GameplayFrame Frame2)
         {

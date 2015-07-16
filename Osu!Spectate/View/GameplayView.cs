@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OsuSpectate.View
 {
-    class GameplayView : View
+    public class GameplayView : View
     {
     }
 }
