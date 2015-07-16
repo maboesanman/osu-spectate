@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OsuSpectate.Beatmap
+namespace OsuSpectate.GameplaySource
 {
-    public class OsuStandardBeatmap
+    class OsuStandardEventList
     {
     }
 }

@@ -10,5 +10,10 @@ namespace OsuSpectate.GameplaySource
 {
     class OsuStandardReplay : Replay, OsuStandardGameplayInput
     {
+        List<GameplayFrame> GameplayFrames;
+        public OsuStandardReplay(string replayFile, bool fullLoad = false) : base(replayFile, fullLoad)
+        {
+
+        }
     }
 }

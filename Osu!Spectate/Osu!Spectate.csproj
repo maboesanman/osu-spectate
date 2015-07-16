@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{240DE377-94F5-404E-9CAE-D9F723316FAD}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OsuSpectate</RootNamespace>
     <AssemblyName>Osu!Spectate</AssemblyName>
@@ -31,6 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="NAudio">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Naudio\NAudio.dll</HintPath>
@@ -55,7 +58,13 @@
     <Compile Include="Audio\AudioPlayer.cs" />
     <Compile Include="Beatmap\Curve.cs" />
     <Compile Include="Beatmap\OsuStandardBeatmap.cs" />
+    <Compile Include="Beatmap\OsuStandardHitObject.cs" />
+    <Compile Include="Game.cs" />
+    <Compile Include="GameplaySource\FrameComparer.cs" />
+    <Compile Include="GameplaySource\GameplayFrame.cs" />
+    <Compile Include="GameplaySource\OsuStandardEventList.cs" />
     <Compile Include="GameplaySource\OsuStandardReplay.cs" />
+    <Compile Include="GameplaySource\RenderObject.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameplaySource\OsuStandardGameplayInput.cs" />

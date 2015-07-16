@@ -10,6 +10,8 @@ namespace OsuSpectate
     {
         static void Main(string[] args)
         {
+            Game Window = new Game(640, 480);
+            Window.Run();
         }
     }
 }
