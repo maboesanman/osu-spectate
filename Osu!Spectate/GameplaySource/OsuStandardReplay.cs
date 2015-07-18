@@ -13,7 +13,7 @@ namespace OsuSpectate.GameplaySource
         public List<GameplayFrame> GameplayFrames;
         public OsuStandardReplay(string replayFile, bool fullLoad = false) : base(replayFile, fullLoad)
         {
-            GameplayFrames.Sort(new GameplayFrameComparer());
+            ReplayFrames.Sort(new ReplayFrameComparer());
             LifeFrames.Sort(new LifeFrameComparer());
         }
         public string GetPlayerName()

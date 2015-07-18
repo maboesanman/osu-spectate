@@ -21,6 +21,8 @@ namespace OsuSpectate.View
             Height = h;
             MyView = v;
         }
+
+        
         public void Draw(TimeSpan Time, int WindowWidth, int WindowHeight)
         {
             MyView.Draw(Time, OriginX, OriginY, Width, Height, WindowWidth, WindowHeight);

@@ -22,13 +22,13 @@ namespace OsuSpectate
         ViewArrangement MyArrangement;
         AudioPlayer Audio;
         OsuStandardBeatmap Beatmap;
-        OsuStandardReplay Replay;
 
         public Game(int w, int h)
             : base(w, h)
         {
             GL.Enable(EnableCap.Texture2D);
-
+            GameplayInputList = new List<OsuStandardGameplayInput>();
+            MyArrangement = new ViewArrangement();
         }
 
 
@@ -37,6 +37,9 @@ namespace OsuSpectate
         {
             base.OnLoad(e);
             base.Title = "osu!spectate";
+            Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\177663 Utagumi Setsugetsuka - Maware! Setsugetsuka chiptune Remix\Utagumi Setsugetsuka - Maware! Setsugetsuka chiptune Remix (jonathanlfj) [MawareXtrA].osu");
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\[Toy] - Utagumi Setsugetsuka - Maware! Setsugetsuka chiptune Remix [MawareXtrA] (2015-06-06) Osu.osr", true));
+            MyArrangement.Views.Add(new ViewContainer(-1.0f,-1.0f,2.0f,2.0f,new SongBackgroundView(Beatmap,200,Color.Black,0)));
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
@@ -49,8 +52,13 @@ namespace OsuSpectate
             base.OnRenderFrame(e);
             base.Title = "osu!spectate";
 
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.ClearColor(Color.Black);
 
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
+            MyArrangement.Draw(new TimeSpan(0L),Width,Height);
 
             SwapBuffers();
             System.GC.Collect();

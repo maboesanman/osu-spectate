@@ -21,16 +21,18 @@ namespace OsuSpectate.View
         private OsuStandardBeatmap beatmap;
         private int FitType; //0 = stretch, 1 = vertical fit, 2 = horizontal fit
 
-        public SongBackgroundView(OsuStandardBeatmap map, int width, int height, byte dim, Color tint, int fit)
+        public SongBackgroundView(OsuStandardBeatmap map, byte dim, Color tint, int fit)
         {
             BackgroundDim = dim;
             beatmap = map;
             FitType = fit;
             SetTint(BackgroundDim, tint);
+            
         }
 
         public void Draw(TimeSpan time, float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
+            
             switch (FitType)
             {
                 case (0):
