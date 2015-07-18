@@ -30,7 +30,7 @@ namespace OsuSpectate.GameplaySource
         TimeSpan GetARMilliseconds();
         float GetCSRadius();
 
-        OsuStandardEventList GetEventList();
         OsuStandardBeatmap GetBeatmap();
+        void HandleUntil(TimeSpan time);
     }
 }

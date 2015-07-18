@@ -62,6 +62,7 @@
     <Compile Include="ContentPipe.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameplaySource\FrameComparer.cs" />
+    <Compile Include="GameplaySource\GameplayEvent.cs" />
     <Compile Include="GameplaySource\GameplayFrame.cs" />
     <Compile Include="GameplaySource\OsuStandardEventList.cs" />
     <Compile Include="GameplaySource\OsuStandardReplay.cs" />

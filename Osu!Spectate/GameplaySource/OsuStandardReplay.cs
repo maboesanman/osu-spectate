@@ -6,13 +6,20 @@ using System.Threading.Tasks;
 
 using ReplayAPI;
 
+using OsuSpectate.Beatmap;
+
 namespace OsuSpectate.GameplaySource
 {
     public class OsuStandardReplay : Replay, OsuStandardGameplayInput
     {
         public List<GameplayFrame> GameplayFrames;
-        public OsuStandardReplay(string replayFile, bool fullLoad = false) : base(replayFile, fullLoad)
+        public OsuStandardBeatmap Beatmap;
+        List<GameplayEvent> EventList;
+        List<RenderHitCircle> RenderList;
+
+        public OsuStandardReplay(string replayFile, OsuStandardBeatmap beatmap, bool fullLoad = false) : base(replayFile, fullLoad)
         {
+            Beatmap = beatmap;
             ReplayFrames.Sort(new ReplayFrameComparer());
             LifeFrames.Sort(new LifeFrameComparer());
         }
@@ -36,46 +43,48 @@ namespace OsuSpectate.GameplaySource
         }
 
 
-        public ReplayFrame GetReplayFrame(TimeSpan time)
+        public ReplayFrame GetReplayFrame(TimeSpan t)
         {
-            throw new NotImplementedException();
+            return ReplayFrames.ElementAt(ReplayFrames.BinarySearch(new ReplayFrame { Time = (int)t.TotalMilliseconds }));
         }
 
         public ReplayFrame GetReplayFrame(long milliseconds)
         {
-            throw new NotImplementedException();
+            return GetReplayFrame(new TimeSpan(milliseconds * TimeSpan.TicksPerMillisecond));
         }
 
         public TimeSpan GetOD300Milliseconds()
         {
-            throw new NotImplementedException();
+            return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (78.0f - Beatmap.GetOverallDifficulty() * 6.0f)));
         }
-
         public TimeSpan GetOD100Milliseconds()
         {
-            throw new NotImplementedException();
+            return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (138.0f - Beatmap.GetOverallDifficulty() * 8.0f)));
         }
-
         public TimeSpan GetOD50Milliseconds()
         {
-            throw new NotImplementedException();
+            return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (198.0f - Beatmap.GetOverallDifficulty() * 10.0f)));
         }
-
         public TimeSpan GetARMilliseconds()
         {
-            throw new NotImplementedException();
+            if ((Mods & Mods.HardRock) == Mods.HardRock)
+            {
+                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * ((1800.0f - (Math.Min(Beatmap.GetApproachRate() * 1.4f, 10.0f)) * 120.0f) - (Math.Max((Math.Min(Beatmap.GetApproachRate() * 1.4f, 10.0f) - 5.0f) * 30.0f, 0.0f)))));
+            }
+            return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * ((1800.0f - (Beatmap.GetApproachRate()) * 120.0f) - (Math.Max((Beatmap.GetApproachRate() - 5.0f) * 30.0f, 0.0f)))));
         }
-
         public float GetCSRadius()
         {
-            throw new NotImplementedException();
+            if ((Mods & Mods.HardRock) == Mods.HardRock)
+            {
+                return 4.0f * (12.0f - Math.Min(Beatmap.GetCircleSize() * 1.3f, 10.0f));
+            }
+            return 4.0f * (12.0f - Beatmap.GetCircleSize());
         }
-
-        public OsuStandardEventList GetEventList()
+        public void HandleUntil(TimeSpan time)
         {
-            throw new NotImplementedException();
-        }
 
+        }
         public Beatmap.OsuStandardBeatmap GetBeatmap()
         {
             throw new NotImplementedException();
