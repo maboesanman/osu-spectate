@@ -59,6 +59,7 @@
     <Compile Include="Beatmap\Curve.cs" />
     <Compile Include="Beatmap\OsuStandardBeatmap.cs" />
     <Compile Include="Beatmap\OsuStandardHitObject.cs" />
+    <Compile Include="ContentPipe.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameplaySource\FrameComparer.cs" />
     <Compile Include="GameplaySource\GameplayFrame.cs" />
