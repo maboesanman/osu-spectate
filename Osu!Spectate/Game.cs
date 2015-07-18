@@ -19,8 +19,8 @@ namespace OsuSpectate
     public class Game : GameWindow
     {
         List<OsuStandardGameplayInput> GameplayInputList;
-        
-
+        ViewArrangement MyArrangement;
+        AudioPlayer Audio;
 
         public Game(int w, int h)
             : base(w, h)

@@ -12,18 +12,18 @@ namespace OsuSpectate.View
         public float OriginY;
         public float Width;
         public float Height;
-        private View View;
+        private View MyView;
         public ViewContainer(float x, float y, float w, float h, View v)
         {
             OriginX = x;
             OriginY = y;
             Width = w;
             Height = h;
-            View = v;
+            MyView = v;
         }
-        public void draw(TimeSpan Time, int WindowWidth, int WindowHeight)
+        public void Draw(TimeSpan Time, int WindowWidth, int WindowHeight)
         {
-            View.Draw(Time, OriginX, OriginY, Width, Height, WindowWidth, WindowHeight);
+            MyView.Draw(Time, OriginX, OriginY, Width, Height, WindowWidth, WindowHeight);
         }
     }
 }
