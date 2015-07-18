@@ -38,8 +38,9 @@ namespace OsuSpectate
             base.OnLoad(e);
             base.Title = "osu!spectate";
             Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\177663 Utagumi Setsugetsuka - Maware! Setsugetsuka chiptune Remix\Utagumi Setsugetsuka - Maware! Setsugetsuka chiptune Remix (jonathanlfj) [MawareXtrA].osu");
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\[Toy] - Utagumi Setsugetsuka - Maware! Setsugetsuka chiptune Remix [MawareXtrA] (2015-06-06) Osu.osr", true));
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\[Toy] - Utagumi Setsugetsuka - Maware! Setsugetsuka chiptune Remix [MawareXtrA] (2015-06-06) Osu.osr",Beatmap, true));
             MyArrangement.Views.Add(new ViewContainer(-1.0f,-1.0f,2.0f,2.0f,new SongBackgroundView(Beatmap,200,Color.Black,0)));
+            Audio = new AudioPlayer(GameplayInputList.ElementAt(0));
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)

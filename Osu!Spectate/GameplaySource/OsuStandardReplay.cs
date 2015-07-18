@@ -85,9 +85,9 @@ namespace OsuSpectate.GameplaySource
         {
 
         }
-        public Beatmap.OsuStandardBeatmap GetBeatmap()
+        public OsuStandardBeatmap GetBeatmap()
         {
-            throw new NotImplementedException();
+            return Beatmap;
         }
     }
 }
