@@ -14,14 +14,36 @@ namespace OsuSpectate.GameplaySource
     {
         public List<GameplayFrame> GameplayFrames;
         public OsuStandardBeatmap Beatmap;
+
+        //EventList
         List<GameplayEvent> EventList;
-        List<RenderHitCircle> RenderList;
+        TimeSpan CurrentTime;
+
+        List<RenderObject> RenderList;
 
         public OsuStandardReplay(string replayFile, OsuStandardBeatmap beatmap, bool fullLoad = false) : base(replayFile, fullLoad)
         {
             Beatmap = beatmap;
             ReplayFrames.Sort(new ReplayFrameComparer());
             LifeFrames.Sort(new LifeFrameComparer());
+
+            EventList = new List<GameplayEvent>();
+            RenderList = new List<RenderObject>();
+            CurrentTime = TimeSpan.Zero;
+            
+            for (int i = 0; i < Beatmap.GetHitObjectList().Count; i++)
+            {
+                switch (Beatmap.GetHitObjectList().ElementAt(i).getType())
+                {
+                    case ("hitcircle"):
+                        new RenderHitCircleBeginEvent((OsuStandardHitCircle)(Beatmap.GetHitObjectList().ElementAt(i)),EventList,RenderList,this);
+                        break;
+                    case ("slider"):
+                        new RenderSliderBeginEvent((OsuStandardSlider)(Beatmap.GetHitObjectList().ElementAt(i)), EventList, RenderList, this);
+                        break;
+
+                }
+            }
         }
         public string GetPlayerName()
         {
@@ -83,7 +105,18 @@ namespace OsuSpectate.GameplaySource
         }
         public void HandleUntil(TimeSpan time)
         {
-
+            bool x = true;
+            while (EventList.Count > 0 && x)
+            {
+                if (EventList.First().getTime().CompareTo(time) < 0)
+                {
+                    EventList.First().handle();
+                }
+                else
+                {
+                    x = false;
+                }
+            }
         }
         public OsuStandardBeatmap GetBeatmap()
         {
