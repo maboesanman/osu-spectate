@@ -8,5 +8,9 @@ namespace OsuSpectate.View
 {
     public class SongTitleDifficultyScrollView : View
     {
+        public void Draw(TimeSpan time, float x, float y, float width, float height, int windowWidth, int windowHeight)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

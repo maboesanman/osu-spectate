@@ -40,7 +40,7 @@ namespace OsuSpectate.View
             BackgroundDimTexture = ContentPipe.LoadTextureFromBitmap(temp);
         }
 
-        public void draw(TimeSpan time, float x, float y, float width, float height, int windowWidth, int windowHeight)
+        public void Draw(TimeSpan time, float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
             switch (FitType)
             {

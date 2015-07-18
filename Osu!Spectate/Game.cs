@@ -21,6 +21,8 @@ namespace OsuSpectate
         List<OsuStandardGameplayInput> GameplayInputList;
         ViewArrangement MyArrangement;
         AudioPlayer Audio;
+        OsuStandardBeatmap Beatmap;
+        OsuStandardReplay Replay;
 
         public Game(int w, int h)
             : base(w, h)

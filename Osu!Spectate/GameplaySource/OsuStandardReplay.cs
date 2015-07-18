@@ -34,5 +34,51 @@ namespace OsuSpectate.GameplaySource
         {
             return GetGameplayFrame(new TimeSpan(milliseconds * TimeSpan.TicksPerMillisecond));
         }
+
+
+        public ReplayFrame GetReplayFrame(TimeSpan time)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ReplayFrame GetReplayFrame(long milliseconds)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TimeSpan GetOD300Milliseconds()
+        {
+            throw new NotImplementedException();
+        }
+
+        public TimeSpan GetOD100Milliseconds()
+        {
+            throw new NotImplementedException();
+        }
+
+        public TimeSpan GetOD50Milliseconds()
+        {
+            throw new NotImplementedException();
+        }
+
+        public TimeSpan GetARMilliseconds()
+        {
+            throw new NotImplementedException();
+        }
+
+        public float GetCSRadius()
+        {
+            throw new NotImplementedException();
+        }
+
+        public OsuStandardEventList GetEventList()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Beatmap.OsuStandardBeatmap GetBeatmap()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
