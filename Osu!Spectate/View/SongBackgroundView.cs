@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-
 using System.Drawing;
+using System.Drawing.Imaging;
 
 using OsuSpectate.Beatmap;
 using OsuSpectate.GameplaySource;
@@ -20,24 +20,13 @@ namespace OsuSpectate.View
         private int BackgroundDimTexture;
         private OsuStandardBeatmap beatmap;
         private int FitType; //0 = stretch, 1 = vertical fit, 2 = horizontal fit
-        private int width;
-        private int height;
 
         public SongBackgroundView(OsuStandardBeatmap map, int width, int height, byte dim, Color tint, int fit)
         {
             BackgroundDim = dim;
             beatmap = map;
             FitType = fit;
-            Bitmap temp = new Bitmap(height, width);
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    temp.SetPixel(y, x, Color.FromArgb(BackgroundDim, tint.R, tint.G, tint.B));
-                }
-            }
-
-            BackgroundDimTexture = ContentPipe.LoadTextureFromBitmap(temp);
+            SetTint(BackgroundDim, tint);
         }
 
         public void Draw(TimeSpan time, float x, float y, float width, float height, int windowWidth, int windowHeight)
@@ -129,21 +118,26 @@ namespace OsuSpectate.View
                     break;
             }
         }
-        public void setReplay(OsuStandardReplay r, OsuStandardBeatmap b)
+        public void SetReplay(OsuStandardReplay r, OsuStandardBeatmap b)
         {
             beatmap = b;
         }
-        public void setTint(byte alpha, Color tint)
+        public void SetTint(byte alpha, Color tint)
         {
-            Bitmap temp = new Bitmap(height, width);
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    temp.SetPixel(y, x, Color.FromArgb(BackgroundDim, tint.R, tint.G, tint.B));
-                }
-            }
-            BackgroundDimTexture = ContentPipe.LoadTextureFromBitmap(temp);
+            BackgroundDim = alpha;
+            Bitmap bmp = new Bitmap(1, 1);
+            bmp.SetPixel(0, 0, Color.FromArgb(BackgroundDim, tint.R, tint.G, tint.B));
+            int id = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, id);
+            BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            bmp.UnlockBits(data);
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            BackgroundDimTexture = id;
         }
     }
 }
