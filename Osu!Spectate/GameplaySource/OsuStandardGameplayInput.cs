@@ -32,5 +32,7 @@ namespace OsuSpectate.GameplaySource
 
         OsuStandardBeatmap GetBeatmap();
         void HandleUntil(TimeSpan time);
+
+        List<RenderObject> GetRenderList();
     }
 }

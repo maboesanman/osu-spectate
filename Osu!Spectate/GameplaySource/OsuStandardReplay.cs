@@ -12,8 +12,19 @@ namespace OsuSpectate.GameplaySource
 {
     public class OsuStandardReplay : Replay, OsuStandardGameplayInput
     {
-        public List<GameplayFrame> GameplayFrames;
+        
         public OsuStandardBeatmap Beatmap;
+
+        private SortedDictionary<TimeSpan, int> ReplayFrameIndex;
+        private List<TimeSpan> ReplayFrameIndexKeys;
+        private SortedDictionary<TimeSpan, int> LifeFrameIndex;
+        private List<TimeSpan> LifeFrameIndexKeys;
+
+        public List<GameplayFrame> GameplayFrames;
+        private SortedDictionary<TimeSpan, int> GameplayFrameIndex;
+        private List<TimeSpan> GameplayFrameIndexKeys;
+
+        private 
 
         //EventList
         List<GameplayEvent> EventList;
@@ -24,8 +35,21 @@ namespace OsuSpectate.GameplaySource
         public OsuStandardReplay(string replayFile, OsuStandardBeatmap beatmap, bool fullLoad = false) : base(replayFile, fullLoad)
         {
             Beatmap = beatmap;
-            ReplayFrames.Sort(new ReplayFrameComparer());
-            LifeFrames.Sort(new LifeFrameComparer());
+            ReplayFrameIndex = new SortedDictionary<TimeSpan, int>();
+            for (int i = 0; i < ReplayFrames.Count(); i++)
+            {
+                
+                ReplayFrameIndex[new TimeSpan(ReplayFrames.ElementAt(i).Time*TimeSpan.TicksPerMillisecond)]= i;
+            }
+            ReplayFrameIndexKeys = ReplayFrameIndex.Keys.ToList();
+
+            LifeFrameIndex = new SortedDictionary<TimeSpan,int>();
+            for (int i = 0; i < LifeFrames.Count(); i++)
+            {
+                LifeFrameIndex[new TimeSpan(LifeFrames.ElementAt(i).Time * TimeSpan.TicksPerMillisecond)] = i;
+            }
+            LifeFrameIndexKeys = LifeFrameIndex.Keys.ToList();
+
 
             EventList = new List<GameplayEvent>();
             RenderList = new List<RenderObject>();
@@ -55,9 +79,7 @@ namespace OsuSpectate.GameplaySource
         }
         public GameplayFrame GetGameplayFrame(TimeSpan t)
         {
-            
-            return GameplayFrames.ElementAt(GameplayFrames.BinarySearch(new GameplayFrame { Time = t }));
-
+            return GameplayFrames.ElementAt(GameplayFrameIndex[GameplayFrameIndexKeys.ElementAt(GameplayFrameIndexKeys.BinarySearch(t))]);
         }
         public GameplayFrame GetGameplayFrame(long milliseconds)
         {
@@ -67,8 +89,8 @@ namespace OsuSpectate.GameplaySource
 
         public ReplayFrame GetReplayFrame(TimeSpan t)
         {
-            return ReplayFrames.ElementAt(ReplayFrames.BinarySearch(new ReplayFrame { Time = (int)t.TotalMilliseconds }));
-        }
+            return ReplayFrames.ElementAt(ReplayFrameIndex[ReplayFrameIndexKeys.ElementAt(ReplayFrameIndexKeys.BinarySearch(t))]);
+        } 
 
         public ReplayFrame GetReplayFrame(long milliseconds)
         {
@@ -121,6 +143,10 @@ namespace OsuSpectate.GameplaySource
         public OsuStandardBeatmap GetBeatmap()
         {
             return Beatmap;
+        }
+        public List<RenderObject> GetRenderList()
+        {
+            return RenderList;
         }
     }
 }

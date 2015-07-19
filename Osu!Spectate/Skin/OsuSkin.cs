@@ -204,14 +204,14 @@ namespace OsuSpectate.Skin
                     {
                         try
                         {
-                            bmp = new Bitmap(@"Resources\maboesanman's skin v4\" + name + @"@2x." + extension);
+                            bmp = new Bitmap(@"Resources\osu!Default Skin\" + name + @"@2x." + extension);
                             LoadCount[2]++;
                         }
                         catch (Exception)
                         {
                             try
                             {
-                                bmp = new Bitmap(@"Resources\maboesanman's skin v4\" + name + @"." + extension);
+                                bmp = new Bitmap(@"Resources\osu!Default Skin\" + name + @"." + extension);
                                 LoadCount[3]++;
                             }
                             catch (Exception)
@@ -234,7 +234,7 @@ namespace OsuSpectate.Skin
 
                     try
                     {
-                        bmp = new Bitmap(@"Resources\maboesanman's skin v4\" + name + @"." + extension);
+                        bmp = new Bitmap(@"Resources\osu!Default Skin\" + name + @"." + extension);
                     }
                     catch (System.IO.FileNotFoundException)
                     {
