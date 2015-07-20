@@ -79,7 +79,9 @@ namespace OsuSpectate.GameplaySource
         }
         public GameplayFrame GetGameplayFrame(TimeSpan t)
         {
-            return GameplayFrames.ElementAt(GameplayFrameIndex[GameplayFrameIndexKeys.ElementAt(GameplayFrameIndexKeys.BinarySearch(t))]);
+            int a = GameplayFrameIndexKeys.BinarySearch(t);
+            Console.WriteLine(a);
+            return GameplayFrames.ElementAt(GameplayFrameIndex[GameplayFrameIndexKeys.ElementAt(a)]);
         }
         public GameplayFrame GetGameplayFrame(long milliseconds)
         {
@@ -87,10 +89,42 @@ namespace OsuSpectate.GameplaySource
         }
 
 
-        public ReplayFrame GetReplayFrame(TimeSpan t)
+        public ReplayFrame GetReplayFrame(TimeSpan time)
         {
-            return ReplayFrames.ElementAt(ReplayFrameIndex[ReplayFrameIndexKeys.ElementAt(ReplayFrameIndexKeys.BinarySearch(t))]);
-        } 
+            int index = ReplayFrameIndexKeys.BinarySearch(time);
+            TimeSpan KeyPrevious = new TimeSpan(0);
+            TimeSpan KeyNext = new TimeSpan(0);
+            if (index == 0)
+            {
+                KeyPrevious = ReplayFrameIndexKeys[0];
+                KeyNext = ReplayFrameIndexKeys[0];
+            }
+            else if (index < 0)
+            {
+                KeyPrevious = ReplayFrameIndexKeys[(~index - 1)];
+                KeyNext = ReplayFrameIndexKeys[Math.Min(~index, ReplayFrameIndexKeys.Count - 1)];
+            }
+            else
+            {
+                KeyPrevious = ReplayFrameIndexKeys[index - 1];
+                KeyNext = ReplayFrameIndexKeys[Math.Min(index, ReplayFrameIndexKeys.Count - 1)];
+            }
+            if (KeyNext == KeyPrevious)
+            {
+                ReplayFrame frame;
+                frame = ReplayFrames[ReplayFrameIndex[KeyNext]];
+                return frame;
+            }
+            ReplayFrame Frame1 = ReplayFrames[ReplayFrameIndex[KeyPrevious]];
+            ReplayFrame Frame2 = ReplayFrames[ReplayFrameIndex[KeyNext]];
+            long milliseconds = (long)time.TotalMilliseconds;
+            float timeScale = (milliseconds * 1.0F - (float)Frame1.Time * 1.0F) / ((float)Frame2.Time * 1.0F - (float)Frame1.Time * 1.0F);
+            ReplayFrame ResultFrame = Frame1;
+            ResultFrame.Time=   (int) milliseconds;
+            ResultFrame.X = timeScale * Frame2.X + (1 - timeScale) * Frame1.X;
+            ResultFrame.Y = timeScale * Frame2.Y + (1 - timeScale) * Frame1.Y;
+            return ResultFrame;
+        }
 
         public ReplayFrame GetReplayFrame(long milliseconds)
         {

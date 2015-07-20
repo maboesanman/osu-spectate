@@ -96,9 +96,9 @@ namespace OsuSpectate.View
         }
         public void Draw(TimeSpan time, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
         {
-            ReplayFrame tick = GameplayInput.GetReplayFrame(time);
-            float CursorX = XComputation(tick.X, OriginX, OriginY, width, height, windowWidth, windowHeight);
-            float CursorY = YComputation(tick.Y, OriginX, OriginY, width, height, windowWidth, windowHeight);
+            ReplayFrame frame = GameplayInput.GetReplayFrame(time);
+            float CursorX = XComputation(frame.X, OriginX, OriginY, width, height, windowWidth, windowHeight);
+            float CursorY = YComputation(frame.Y, OriginX, OriginY, width, height, windowWidth, windowHeight);
             float CursorWidth = Math.Abs(XComputation(20.0f, OriginX, OriginY, width, height, windowWidth, windowHeight) - XComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
             float CursorHeight = Math.Abs(YComputation(20.0f, OriginX, OriginY, width, height, windowWidth, windowHeight) - YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
 
@@ -132,13 +132,12 @@ namespace OsuSpectate.View
             GL.End();
            
             //hit objects
-
+    //        Console.WriteLine(GameplayInput.GetRenderList().Count);
             for (int i = GameplayInput.GetRenderList().Count - 1; i >= 0; i--)
             {
                 switch (GameplayInput.GetRenderList().ElementAt(i).getType())
                 {
                     case ("HitCircle"):
-
                         OsuStandardHitCircle c = ((RenderHitCircle)GameplayInput.GetRenderList().ElementAt(i)).HitCircle;
                         GL.BindTexture(TextureTarget.Texture2D, Skin.GetHitCircle());
                         GL.Color4(1.0f, 0.5f, 1.0f, FadeInFunction((float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds)));
@@ -153,7 +152,7 @@ namespace OsuSpectate.View
                         GL.TexCoord2(0, 0);
                         GL.Vertex2(XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
-
+                        
                         GL.BindTexture(TextureTarget.Texture2D, Skin.GetHitCircleOverlay());
                         GL.Color4(1.0f, 1.0f, 1.0f, FadeInFunction((float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds)));
                         GL.Begin(PrimitiveType.Quads);
@@ -233,8 +232,8 @@ namespace OsuSpectate.View
             }
 
                 //cursor
-
-                GL.BindTexture(TextureTarget.Texture2D, Skin.GetCursor());
+            
+            GL.BindTexture(TextureTarget.Texture2D, Skin.GetCursor());
             GL.Begin(PrimitiveType.Quads);
             GL.Color3(Color.White);
             GL.TexCoord2(0, 0);

@@ -69,7 +69,7 @@ namespace OsuSpectate
             {
                 GameplayInputList.ElementAt(i).HandleUntil(timer.Elapsed);
             }
-            MyArrangement.Draw(new TimeSpan(0L),Width,Height);
+            MyArrangement.Draw(timer.Elapsed,Width,Height);
 
             SwapBuffers();
             System.GC.Collect();

@@ -32,7 +32,7 @@ namespace OsuSpectate.Beatmap
                 case "12":
                     return new OsuStandardSpinner(split, comboIndex, comboNumber, b);
                 default:
-                    Console.WriteLine("wut " + split[3]);
+            //        Console.WriteLine("wut " + split[3]);
                     return null;
 
             }

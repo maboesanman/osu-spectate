@@ -180,10 +180,10 @@ namespace OsuSpectate.GameplaySource
             Render = new RenderHitCircle(circle, replay);
             RenderList = renderList;
             Parent.Add(this);
-
         }
         public override void handle()
         {
+            
             RenderList.Add(Render);
             Parent.Remove(this);
             Parent.Add(new RenderHitCircleEndEvent(Circle, Render, Parent,RenderList));
@@ -197,12 +197,14 @@ namespace OsuSpectate.GameplaySource
         public RenderHitCircleEndEvent(OsuStandardHitCircle circle, RenderHitCircle render, List<GameplayEvent> parent, List<RenderObject> renderList)
             : base(circle.getEnd().Add(circle.getBeatmap().GetOD50Milliseconds()))
         {
+            Console.WriteLine("end event added");
             Parent = parent;
             RenderList = renderList;
             Render = render;
         }
         public override void handle()
         {
+            Console.WriteLine("end event handled");
             RenderList.Remove(Render);
             Parent.Remove(this);
         }
