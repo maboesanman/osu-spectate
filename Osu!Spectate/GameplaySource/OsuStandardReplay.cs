@@ -164,6 +164,7 @@ namespace OsuSpectate.GameplaySource
             bool x = true;
             while (EventList.Count > 0 && x)
             {
+                EventList.Sort();
                 if (EventList.First().getTime().CompareTo(time) < 0)
                 {
                     EventList.First().handle();

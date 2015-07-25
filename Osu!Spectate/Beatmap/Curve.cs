@@ -20,7 +20,7 @@ namespace OsuSpectate.Beatmap
             switch (sliderType)
             {
                 case ('P')://pass through
-                    return new LinearBezierCurve(points, length);
+                    return new CircularArcCurve(points, length);
                 case ('C')://catmull
                     return new LinearBezierCurve(points, length);
                 case ('L')://linear
@@ -36,10 +36,12 @@ namespace OsuSpectate.Beatmap
 
     public class CircularArcCurve : Curve
     {
-        float length;
-        PointF center;
-        float startDegree;
-        float numberOfDegrees; //positive for counter clockwise, negative for clockwise
+        float Length;
+        PointF Center;
+        float StartDegree;
+        float NumberOfDegrees; //positive for counter clockwise, negative for clockwise
+        float radius;
+        public PointF[] approximatePoints;
         public CircularArcCurve(PointF[] points, float l)
         {
             if (points.Length != 3)
@@ -47,48 +49,56 @@ namespace OsuSpectate.Beatmap
                 Console.WriteLine("invalid slider curve");
                 return;
             }
-            length = l;
-            center = new PointF();
-
+            Length = l;
+            Center = Circumcenter(points[0],points[1],points[2]);
+            StartDegree = (float)Math.Atan2(points[0].Y - Center.Y, points[0].X - Center.X);
+            float MiddleDegree = (float)Math.Atan2(points[1].Y - Center.Y, points[1].X - Center.X);
+            float Temp = StartDegree-MiddleDegree;
+            radius = ((new Vector2F(points[0])) - (new Vector2F(Center))).Norm();
+            if (Temp < 0)
+            {
+                Temp = (float)(2 * Math.PI + Temp);
+            }
+            if (Temp < Math.PI)
+            {
+                NumberOfDegrees = (float)(l / radius);
+            }
+            if (Temp >= Math.PI)
+            {
+                NumberOfDegrees = -(float)(l / radius);
+            }
+            approximatePoints = new PointF[30];
+            for (int i = 0; i < 30; i++)
+            {
+                approximatePoints[i] = pointOnCurve(1.0f * i / 30.0f);
+            }
         }
         public override float getLength()
         {
-            throw new NotImplementedException();
+            return Length;
         }
         public override PointF[] getPoints()
         {
-            throw new NotImplementedException();
+            return approximatePoints;
         }
         public override PointF pointOnCurve(float time)
         {
-            throw new NotImplementedException();
+            Vector2F C = new Vector2F(Center);
+            Vector2F Point = new Vector2F((float)Math.Cos(NumberOfDegrees * time + StartDegree), (float)Math.Sin(NumberOfDegrees * time + StartDegree));
+            Vector2F P = C + radius * Point;
+            return new PointF(P.x, P.y);
         }
-        public static PointF circumcenter(PointF p, PointF q, PointF r)
+        public static PointF Circumcenter(PointF point1, PointF point2, PointF point3)
         {
-            PointF a;
-            PointF b;
-            PointF c;
-            if (Math.Abs(q.Y - r.Y) <= Math.Abs(p.Y - r.Y) && Math.Abs(q.Y - r.Y) <= Math.Abs(p.Y - q.Y))
-            {
-                a = p;
-                b = q;
-                c = r;
-            }
-            else if (Math.Abs(p.Y - r.Y) <= Math.Abs(p.Y - q.Y) && Math.Abs(p.Y - r.Y) <= Math.Abs(q.Y - r.Y))
-            {
-                a = q;
-                b = p;
-                c = r;
-            }
-            else
-            {
-                a = r;
-                b = p;
-                c = q;
-            }
-            float x = (c.Y - b.Y + (a.X * a.X - b.X * b.X) / (b.Y - a.Y) + (c.X * c.X - a.X * a.X) / (c.Y - b.Y)) / (2.0f * ((a.X - b.X) / (b.Y - a.Y) + (c.X - a.X) / (c.Y - b.Y)));
-            float y = ((a.X - b.X) / (b.Y - a.Y)) * (x - (a.X + b.X) / (2.0f)) + (a.Y + b.Y) / 2.0f;
-            return new PointF(x, y);
+            Vector2F A = new Vector2F(point1);
+            Vector2F B = new Vector2F(point2);
+            Vector2F C = new Vector2F(point3);
+            float a = (B - C).NormSquared();
+            float b = (A - C).NormSquared();
+            float c = (A - B).NormSquared();
+            Vector2F M = (A * a * (-a + b + c) + B * b * (a - b + c) + C * c * (a + b - c)) / (a * (-a + b + c) + b * (a - b + c) + c * (a + b - c));
+            
+            return new PointF(M.x, M.y);
         }
     }
     /*
@@ -133,10 +143,7 @@ namespace OsuSpectate.Beatmap
             bezierList.Add(new LinearBezierSegment(last));
             beziers = bezierList.ToArray();
             approximatePoints = new PointF[30];
-            for (int i = 0; i < 30; i++)
-            {
-                approximatePoints[i] = pointOnCurve(1.0f * i / 30.0f);
-            }
+            
         }
         override public float getLength()
         {
@@ -254,6 +261,53 @@ namespace OsuSpectate.Beatmap
         private static double bernstein(int i, int n, float t)
         {
             return binomialCoefficient(n, i) * Math.Pow(t, i) * Math.Pow(1 - t, n - i);
+        }
+    }
+   class Vector2F
+    {
+        public float x;
+        public float y;
+        public Vector2F(float a, float b)
+        {
+            x = a;
+            y = b;
+        }
+        public Vector2F(PointF p)
+        {
+            x = p.X;
+            y = p.Y;
+        }
+        public static Vector2F operator *(Vector2F v, float s)
+        {
+            return new Vector2F(v.x * s, v.y * s);
+        }
+        public static Vector2F operator /(Vector2F v, float s)
+        {
+            return new Vector2F(v.x / s, v.y / s);
+        }
+        public static Vector2F operator *(float s, Vector2F v)
+        {
+            return new Vector2F(v.x * s, v.y * s);
+        }
+        public static Vector2F operator +(Vector2F v1, Vector2F v2)
+        {
+            return new Vector2F(v1.x + v2.x, v1.y + v2.y);
+        }
+        public static Vector2F operator -(Vector2F v1, Vector2F v2)
+        {
+            return new Vector2F(v1.x - v2.x, v1.y - v2.y);
+        }
+        public float Dot(Vector2F v)
+        {
+            return x * v.x + y * v.y;
+        }
+        public float NormSquared()
+        {
+            return x * x + y * y;
+        }
+        public float Norm()
+        {
+            return (float)Math.Sqrt(x * x + y * y);
         }
     }
 }
