@@ -56,9 +56,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\AudioPlayer.cs" />
+    <Compile Include="Beatmap\BeatmapCanvas.cs" />
     <Compile Include="Beatmap\Curve.cs" />
     <Compile Include="Beatmap\OsuStandardBeatmap.cs" />
     <Compile Include="Beatmap\OsuStandardHitObject.cs" />
+    <Compile Include="Computation.cs" />
     <Compile Include="ContentPipe.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameplaySource\FrameComparer.cs" />
@@ -70,6 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameplaySource\OsuStandardGameplayInput.cs" />
     <Compile Include="Skin\OsuSkin.cs" />
+    <Compile Include="View\BackgroundImageFitType.cs" />
     <Compile Include="View\CurrentTimeView.cs" />
     <Compile Include="View\OsuStandardGameplayView.cs" />
     <Compile Include="View\SongBackgroundView.cs" />

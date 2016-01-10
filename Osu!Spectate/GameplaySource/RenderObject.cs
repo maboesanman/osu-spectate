@@ -16,16 +16,25 @@ namespace OsuSpectate.GameplaySource
 {
     public interface RenderObject
     {
-        string getType();
+        string GetType();
+        void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight);
     }
+    
     public class RenderHitCircle : RenderObject
     {
         public OsuStandardHitCircle HitCircle;
+        public OsuStandardGameplayInput GameplayInput;
+        private bool Initialized;
         public RenderHitCircle(OsuStandardHitCircle h, OsuStandardGameplayInput r)
         {
             HitCircle = h;
+            GameplayInput = r;
         }
-        public string getType()
+        public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
+        {
+            Initialized = true;
+        }
+        public string GetType()
         {
             return "HitCircle";
         }
@@ -33,11 +42,8 @@ namespace OsuSpectate.GameplaySource
     public class RenderSlider : RenderObject
     {
         public OsuStandardSlider Slider;
-        public float x;
-        public float y;
-        public float width;
-        public float height;
         public int SliderBorderTexture;
+        private bool Initialized;
         public RenderSlider(OsuStandardSlider s, OsuStandardGameplayInput r)
         {
             Slider = s;
@@ -83,7 +89,12 @@ namespace OsuSpectate.GameplaySource
 
 
         }
-        public string getType()
+        public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
+        {
+
+            Initialized = true;
+        }
+        public string GetType()
         {
             return "Slider";
         }
@@ -94,9 +105,21 @@ namespace OsuSpectate.GameplaySource
     }
     public class RenderSpinner : RenderObject
     {
-        public string getType()
+        public OsuStandardSpinner Spinner;
+        public int SliderBorderTexture;
+        private bool Initialized;
+        public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
+        {
+
+            Initialized = true;
+        }
+        public string GetType()
         {
             return "Spinner";
+        }
+        public void kill()
+        {
+            GL.DeleteTexture(SliderBorderTexture);
         }
     }
 }

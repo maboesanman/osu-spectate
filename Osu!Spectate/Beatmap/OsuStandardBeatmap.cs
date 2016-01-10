@@ -325,7 +325,8 @@ namespace OsuSpectate.Beatmap
                                         if (line.Contains(','))
                                         {
                                             string[] split = line.Split(',');
-                                            if (split[3] == "5" || split[3] == "6")
+                                            int x = Int32.Parse(split[3]);
+                                            if ((x & 4) == 4) 
                                             {
                                                 currentComboIndex++;
                                                 currentComboNumber = 1;

@@ -189,16 +189,19 @@ namespace OsuSpectate.Beatmap
             float approxlength = 0;
             for (int i = 0; i < points.Length - 1; i++)
                 approxlength += (float)Math.Sqrt((points[i].X - points[i + 1].X) * (points[i].X - points[i + 1].X) + (points[i].Y - points[i + 1].Y) * (points[i].Y - points[i + 1].Y));
-            approximatePoints = new PointF[30];
-            for (int i = 0; i < 30; i++)
+            approximatePoints = new PointF[(int)approxlength];
+            for (int i = 0; i < approximatePoints.Length; i++)
             {
-                approximatePoints[i] = pointOnCurve(1.0f * i / 30.0f);
+                approximatePoints[i] = pointOnCurve(1.0f * i / approximatePoints.Length);
             }
             length = 0.0f;
+            float max = 0.0f;
             for (int i = 0; i < approximatePoints.Length - 1; i++)
             {
+                max = Math.Max(max, (float)Math.Sqrt((approximatePoints[i].X - approximatePoints[i + 1].X) * (approximatePoints[i].X - approximatePoints[i + 1].X) + (approximatePoints[i].Y - approximatePoints[i + 1].Y) * (approximatePoints[i].Y - approximatePoints[i + 1].Y)));
                 length += (float)Math.Sqrt((approximatePoints[i].X - approximatePoints[i + 1].X) * (approximatePoints[i].X - approximatePoints[i + 1].X) + (approximatePoints[i].Y - approximatePoints[i + 1].Y) * (approximatePoints[i].Y - approximatePoints[i + 1].Y));
             }
+            Console.WriteLine(max);
         }
         override public float getLength()
         {

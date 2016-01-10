@@ -10,6 +10,7 @@ using System.Drawing;
 
 using ReplayAPI;
 
+using OsuSpectate;
 using OsuSpectate.GameplaySource;
 using OsuSpectate.Beatmap;
 using OsuSpectate.Skin;
@@ -68,28 +69,6 @@ namespace OsuSpectate.View
             NameBmpGfx.Flush();
             NameBmpGfx.Dispose();
         }
-        private float XComputation(float x, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
-        {
-            if (windowWidth*width / windowHeight/height < 10.0f / 9.0f)
-            {
-                return (x / 512.0f * width * windowWidth) / windowWidth + OriginX;
-            }
-            else
-            {
-                return (width * windowWidth / 2.0f - height * windowHeight * 5.0f / 9.0f + (x/512.0f) * height * windowHeight * 5.0f / 4.5f) / windowWidth + OriginX;
-            }
-        }
-        private float YComputation(float y, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
-        {
-            if (windowWidth*width / windowHeight/height < 10.0f / 9.0f)
-            {
-                return (height * windowHeight / 2.0f - width * windowWidth * 3.0f / 8.0f + (1.0f - y / 384.0f) * width * windowWidth * 3.0f / 4.0f) / windowHeight + OriginY;
-            }
-            else
-            {
-                return (height * windowHeight / 2.0f - height * windowHeight * 5.0f / 12.0f + (1.0f-y/384.0f) * height * windowHeight * 5.0f / 6.0f) / windowHeight + OriginY;
-            }
-        }
         private float FadeInFunction(float f)
         {
             return 1.0f - (float)Math.Pow(f, 2.0f);
@@ -97,10 +76,19 @@ namespace OsuSpectate.View
         public void Draw(TimeSpan time, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
         {
             ReplayFrame frame = GameplayInput.GetReplayFrame(time);
-            float CursorX = XComputation(frame.X, OriginX, OriginY, width, height, windowWidth, windowHeight);
-            float CursorY = YComputation(frame.Y, OriginX, OriginY, width, height, windowWidth, windowHeight);
-            float CursorWidth = Math.Abs(XComputation(20.0f, OriginX, OriginY, width, height, windowWidth, windowHeight) - XComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
-            float CursorHeight = Math.Abs(YComputation(20.0f, OriginX, OriginY, width, height, windowWidth, windowHeight) - YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
+            float CursorX;
+            float CursorY;
+            if ((GameplayInput.GetMods() & Mods.HardRock) == Mods.HardRock)
+            {
+                CursorX = Computation.XComputation(frame.X, OriginX, OriginY, width, height, windowWidth, windowHeight);
+                CursorY = Computation.YComputation(384.0f-frame.Y, OriginX, OriginY, width, height, windowWidth, windowHeight);
+            } else
+            {
+                CursorX = Computation.XComputation(frame.X, OriginX, OriginY, width, height, windowWidth, windowHeight);
+                CursorY = Computation.YComputation(frame.Y, OriginX, OriginY, width, height, windowWidth, windowHeight);
+            }
+            float CursorWidth = Math.Abs(Computation.XComputation(20.0f, OriginX, OriginY, width, height, windowWidth, windowHeight) - Computation.XComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
+            float CursorHeight = Math.Abs(Computation.YComputation(20.0f, OriginX, OriginY, width, height, windowWidth, windowHeight) - Computation.YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
 
             //player name
             
@@ -122,20 +110,20 @@ namespace OsuSpectate.View
             GL.BindTexture(TextureTarget.Texture2D, BackgroundDimTexture);
             GL.Begin(PrimitiveType.Quads);
             GL.TexCoord2(0, 1);
-            GL.Vertex2(XComputation(0.0f,OriginX,OriginY,width,height,windowWidth,windowHeight),YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
+            GL.Vertex2(Computation.XComputation(0.0f,OriginX,OriginY,width,height,windowWidth,windowHeight),Computation.YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
             GL.TexCoord2(1, 1);
-            GL.Vertex2(XComputation(512.0f,OriginX,OriginY,width,height,windowWidth,windowHeight),YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
+            GL.Vertex2(Computation.XComputation(512.0f,OriginX,OriginY,width,height,windowWidth,windowHeight),Computation.YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
             GL.TexCoord2(1, 0);
-            GL.Vertex2(XComputation(512.0f,OriginX,OriginY,width,height,windowWidth,windowHeight),YComputation(384.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
+            GL.Vertex2(Computation.XComputation(512.0f,OriginX,OriginY,width,height,windowWidth,windowHeight),Computation.YComputation(384.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
             GL.TexCoord2(0, 0);
-            GL.Vertex2(XComputation(0.0f,OriginX,OriginY,width,height,windowWidth,windowHeight),YComputation(384.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
+            GL.Vertex2(Computation.XComputation(0.0f,OriginX,OriginY,width,height,windowWidth,windowHeight),Computation.YComputation(384.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
             GL.End();
            
             //hit objects
     //        Console.WriteLine(GameplayInput.GetRenderList().Count);
             for (int i = GameplayInput.GetRenderList().Count - 1; i >= 0; i--)
             {
-                switch (GameplayInput.GetRenderList().ElementAt(i).getType())
+                switch (GameplayInput.GetRenderList().ElementAt(i).GetType())
                 {
                     case ("HitCircle"):
                         OsuStandardHitCircle c = ((RenderHitCircle)GameplayInput.GetRenderList().ElementAt(i)).HitCircle;
@@ -144,86 +132,106 @@ namespace OsuSpectate.View
                         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, 100.0f);
                         GL.Begin(PrimitiveType.Quads);
                         GL.TexCoord2(0, 1);
-                        GL.Vertex2(XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 1);
-                        GL.Vertex2(XComputation(c.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 0);
-                        GL.Vertex2(XComputation(c.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(0, 0);
-                        GL.Vertex2(XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
                         
                         GL.BindTexture(TextureTarget.Texture2D, Skin.GetHitCircleOverlay());
                         GL.Color4(1.0f, 1.0f, 1.0f, FadeInFunction((float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds)));
                         GL.Begin(PrimitiveType.Quads);
                         GL.TexCoord2(0, 1);
-                        GL.Vertex2(XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 1);
-                        GL.Vertex2(XComputation(c.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 0);
-                        GL.Vertex2(XComputation(c.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(0, 0);
-                        GL.Vertex2(XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
 
                         GL.BindTexture(TextureTarget.Texture2D, Skin.GetApproachCircle());
                         GL.Color4(1.0f, 0.5f, 1.0f, FadeInFunction((float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds)));
                         GL.Begin(PrimitiveType.Quads);
                         GL.TexCoord2(0, 1);
-                        GL.Vertex2(XComputation(c.x - (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y - (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x - (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y - (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 1);
-                        GL.Vertex2(XComputation(c.x + (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y - (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x + (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y - (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 0);
-                        GL.Vertex2(XComputation(c.x + (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y + (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x + (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y + (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(0, 0);
-                        GL.Vertex2(XComputation(c.x - (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(c.y + (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(c.x - (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(c.y + (GameplayInput.GetCSRadius() * 4.0f * (float)(c.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds) + Beatmap.GetCSRadius()), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
                         break;
                     case ("Slider"):
                         RenderSlider rs = (RenderSlider)GameplayInput.GetRenderList().ElementAt(i);
                         OsuStandardSlider s = rs.Slider;
                         float opacity = FadeInFunction((float)(s.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds));
+                        int n = (int)s.curve.getLength();
+                        for (int j=0;j<n;j++)
+                        {
+                            PointF p = s.curve.pointOnCurve((float)j / (float)n);
+                            GL.BindTexture(TextureTarget.Texture2D, Skin.GetHitCircle());
+                            GL.Color4(1.0f, 0.5f, 1.0f, FadeInFunction((float)(s.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds)));
+                            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, 100.0f);
+                            GL.Begin(PrimitiveType.Quads);
+                            GL.TexCoord2(0, 1);
+                            GL.Vertex2(Computation.XComputation(p.X - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(p.Y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(1, 1);
+                            GL.Vertex2(Computation.XComputation(p.X + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(p.Y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(1, 0);
+                            GL.Vertex2(Computation.XComputation(p.X + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(p.Y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(0, 0);
+                            GL.Vertex2(Computation.XComputation(p.X - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(p.Y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.End();
+                            
+                            GL.BindTexture(TextureTarget.Texture2D, Skin.GetHitCircleOverlay());
+                            GL.Color4(1.0f, 1.0f, 1.0f, FadeInFunction((float)(s.getStart().Subtract(time).TotalMilliseconds / GameplayInput.GetARMilliseconds().TotalMilliseconds)));
+                            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, 100.0f);
+                            GL.Begin(PrimitiveType.Quads);
+                            GL.TexCoord2(0, 1);
+                            GL.Vertex2(Computation.XComputation(p.X - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(p.Y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(1, 1);
+                            GL.Vertex2(Computation.XComputation(p.X + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(p.Y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(1, 0);
+                            GL.Vertex2(Computation.XComputation(p.X + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(p.Y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(0, 0);
+                            GL.Vertex2(Computation.XComputation(p.X - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(p.Y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.End();
+
+                        }
                         
-                        GL.BindTexture(TextureTarget.Texture2D, rs.SliderBorderTexture);
-                        GL.Color4(1.0f, 1.0f, 1.0f, opacity);
-                        GL.Begin(PrimitiveType.Quads);
-                        GL.TexCoord2(0, 1);
-                        GL.Vertex2(XComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
-                        GL.TexCoord2(1, 1);
-                        GL.Vertex2(XComputation(512.0f, OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
-                        GL.TexCoord2(1, 0);
-                        GL.Vertex2(XComputation(512.0f, OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(384.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
-                        GL.TexCoord2(0, 0);
-                        GL.Vertex2(XComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight), YComputation(384.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
-                        GL.End();
-                        /*
-                        GL.BindTexture(TextureTarget.Texture2D, skin.GetHitCircle());
+                        GL.BindTexture(TextureTarget.Texture2D, Skin.GetHitCircle());
                         GL.Color4(1.0f, 0.5f, 1.0f, opacity);
                         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, 100.0f);
                         GL.Begin(PrimitiveType.Quads);
                         GL.TexCoord2(0, 1);
-                        GL.Vertex2(xComputation(s.x - replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), yComputation(s.y - replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(s.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 1);
-                        GL.Vertex2(xComputation(s.x + replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), yComputation(s.y - replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(s.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 0);
-                        GL.Vertex2(xComputation(s.x + replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), yComputation(s.y + replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(s.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(0, 0);
-                        GL.Vertex2(xComputation(s.x - replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), yComputation(s.y + replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(s.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
 
-                        GL.BindTexture(TextureTarget.Texture2D, skin.GetHitCircleOverlay());
+                        GL.BindTexture(TextureTarget.Texture2D, Skin.GetHitCircleOverlay());
                         GL.Color4(1.0f, 1.0f, 1.0f, opacity);
                         GL.Begin(PrimitiveType.Quads);
                         GL.TexCoord2(0, 1);
-                        GL.Vertex2(xComputation(s.x - replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), yComputation(s.y - replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(s.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 1);
-                        GL.Vertex2(xComputation(s.x + replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), yComputation(s.y - replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(s.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.y - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(1, 0);
-                        GL.Vertex2(xComputation(s.x + replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), yComputation(s.y + replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(s.x + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.TexCoord2(0, 0);
-                        GL.Vertex2(xComputation(s.x - replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), yComputation(s.y + replay.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                        GL.Vertex2(Computation.XComputation(s.x - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
-                        */
+                        
 
                         break;
                 }
@@ -249,11 +257,6 @@ namespace OsuSpectate.View
             //keys pressed
 
             
-        }
-        public void setReplay(OsuStandardReplay r, OsuStandardBeatmap b)
-        {
-            Beatmap = b;
-            GameplayInput = r;
         }
     }
 }

@@ -19,20 +19,21 @@ namespace OsuSpectate.Beatmap
         public abstract void flipY();
         public static OsuStandardHitObject getNewHitobject(string[] split, int comboIndex, int comboNumber, OsuStandardBeatmap b)
         {
-            switch (split[3])
+            int x = Int32.Parse(split[3]);
+            int y=-1;
+            if ((x & 1) == 1) { y = 0; }
+            if ((x & 2) == 2) { y = 1; }
+            if ((x & 8) == 8) { y = 2; }
+            switch (y)
             {
-                case "1":
+                case 0:
                     return new OsuStandardHitCircle(split, comboIndex, comboNumber, b);
-                case "2":
+                case 1:
                     return new OsuStandardSlider(split, comboIndex, comboNumber, b);
-                case "5":
-                    return new OsuStandardHitCircle(split, comboIndex, comboNumber, b);
-                case "6":
-                    return new OsuStandardSlider(split, comboIndex, comboNumber, b);
-                case "12":
+                case 2:
                     return new OsuStandardSpinner(split, comboIndex, comboNumber, b);
                 default:
-            //        Console.WriteLine("wut " + split[3]);
+                    Console.WriteLine("wut " + split[3]);
                     return null;
 
             }
