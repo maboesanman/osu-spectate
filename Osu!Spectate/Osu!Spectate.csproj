@@ -56,7 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\AudioPlayer.cs" />
-    <Compile Include="Beatmap\BeatmapCanvas.cs" />
     <Compile Include="Beatmap\Curve.cs" />
     <Compile Include="Beatmap\OsuStandardBeatmap.cs" />
     <Compile Include="Beatmap\OsuStandardHitObject.cs" />

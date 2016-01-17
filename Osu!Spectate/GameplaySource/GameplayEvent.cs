@@ -195,9 +195,10 @@ namespace OsuSpectate.GameplaySource
         List<RenderObject> RenderList;
         RenderHitCircle Render;
         public RenderHitCircleEndEvent(OsuStandardHitCircle circle, RenderHitCircle render, List<GameplayEvent> parent, List<RenderObject> renderList)
-            : base(circle.getEnd().Add(circle.getBeatmap().GetOD50Milliseconds()))
+            : base(circle.getEnd())
         {
-            
+            //put this after circle.getEnd()
+            //.Add(circle.getBeatmap().GetOD50Milliseconds()) 
             Parent = parent;
             RenderList = renderList;
             Render = render;

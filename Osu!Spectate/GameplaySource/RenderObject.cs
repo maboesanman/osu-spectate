@@ -9,6 +9,7 @@ using OpenTK.Graphics.OpenGL;
 
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
 
 using OsuSpectate.Beatmap;
 
@@ -54,20 +55,22 @@ namespace OsuSpectate.GameplaySource
             SliderGFX.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
             SliderGFX.Clear(Color.Transparent);
             float cs = r.GetCSRadius();
-            PointF[] flipped = new PointF[s.curve.getPoints().Length];
-            for (int i = 0; i < flipped.Length; i++)
-            {
-                flipped[i] = new PointF(s.curve.getPoints()[i].X, 384.0f - s.curve.getPoints()[i].Y);
-            }
 
+            Pen backPen = new Pen(Color.White, cs * 2.0f);
+            backPen.LineJoin = LineJoin.Round;
+            backPen.EndCap = LineCap.Round;
+            backPen.StartCap = LineCap.Round;
 
-            SliderGFX.DrawLines(new Pen(Color.White, 2.0f * cs), flipped);
-            SliderGFX.FillEllipse(new SolidBrush(Color.White), s.curve.pointOnCurve(0.0f).X - cs, 384.0f - s.curve.pointOnCurve(0.0f).Y - cs, 2.0f * cs, 2.0f * cs);
-            SliderGFX.FillEllipse(new SolidBrush(Color.White), s.curve.pointOnCurve(1.0f).X - cs, 384.0f - s.curve.pointOnCurve(1.0f).Y - cs, 2.0f * cs, 2.0f * cs);
-            SliderGFX.DrawLines(new Pen(Color.Black, cs * 7.0f / 4.0f), flipped);
-            SliderGFX.FillEllipse(new SolidBrush(Color.Black), s.curve.pointOnCurve(0.0f).X - cs * 7.0f / 8.0f, 384.0f - s.curve.pointOnCurve(0.0f).Y - cs * 7.0f / 8.0f, 2.0f * cs * 7.0f / 8.0f, 2.0f * cs * 7.0f / 8.0f);
-            SliderGFX.FillEllipse(new SolidBrush(Color.Black), s.curve.pointOnCurve(1.0f).X - cs * 7.0f / 8.0f, 384.0f - s.curve.pointOnCurve(1.0f).Y - cs * 7.0f / 8.0f, 2.0f * cs * 7.0f / 8.0f, 2.0f * cs * 7.0f / 8.0f);
+            Pen frontPen = new Pen(Color.Black, cs * 1.75f);
+            frontPen.LineJoin = LineJoin.Round;
+            frontPen.EndCap = LineCap.Round;
+            frontPen.StartCap = LineCap.Round;
 
+            GraphicsPath path = new GraphicsPath();
+            path.AddLines(s.curve.getPoints().ToArray());
+            SliderGFX.DrawPath(backPen, path);
+            SliderGFX.DrawPath(frontPen, path);
+            
 
 
             int ID = GL.GenTexture();

@@ -12,7 +12,7 @@ namespace OsuSpectate.View
         public float OriginY;
         public float Width;
         public float Height;
-        private View MyView;
+        public View MyView;
         public ViewContainer(float x, float y, float w, float h, View v)
         {
             OriginX = x;

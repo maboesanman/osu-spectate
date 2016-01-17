@@ -10,8 +10,23 @@ namespace OsuSpectate.Beatmap
 {
     abstract public class Curve
     {
-        abstract public PointF pointOnCurve(float time);
-        abstract public PointF[] getPoints();
+        public PointF[] controlPoints;
+        float[] approximateIntervals;
+        PointF[] approximatePoints;
+        float actualEndParameter;
+        abstract public PointF rawPointOnCurve(float time);
+        public PointF pointOnCurve(float time)//adjusted for speed, time is between 0 and 1, where 0 is the start and 1 is the correct length away
+        {
+            time = Math.Min(time, 1.0f);//force time to be in [0,1]
+            time = Math.Max(time, 0.0f);
+            float t1 = approximateIntervals[(int)Math.Min(Math.Floor(time * getLength()), approximateIntervals.Length - 1)];
+            float t2 = approximateIntervals[(int)Math.Min(Math.Ceiling(time * getLength()), approximateIntervals.Length - 1)];
+            if(t1==t2)
+            {
+                return rawPointOnCurve(t1);
+            }
+            return rawPointOnCurve(t1+(time-t1)/(t2-t1));
+        }
         abstract public float getLength();
         //      abstract public float getStartAngle();
         //      abstract public float getEndAngle();
@@ -32,6 +47,79 @@ namespace OsuSpectate.Beatmap
                     return null;
             }
         }
+        public void ComputePoints()
+        {
+            /*
+            List<float> intervals = new List<float>(0);
+            float length = getLength();
+            float approximateLength = 0;
+            float i1;
+            float i2;
+            for (int i = 0; i < (int)Math.Ceiling(length); i++)
+            {
+                i1 = 1.0f * i / (int)Math.Ceiling(length);
+                i2 = 1.0f * (i + 1) / (int)Math.Ceiling(length);
+                PointF p1 = rawPointOnCurve(i1);
+                PointF p2 = rawPointOnCurve(i2);
+                intervals.Add(i1);
+                approximateLength += (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
+                if(approximateLength>length)
+                {
+                    Vector2F v1 = new Vector2F(p1);
+                    Vector2F v2 = new Vector2F(p2);
+                    float t1 = approximateLength - (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
+                    float t2 = approximateLength;
+                    float t3 = length;
+                    actualEndParameter = (t3 - t1) + i * 1.0f;
+                    
+                    intervals.Add(actualEndParameter);
+                }
+            }
+            float[] adjustedIntervals = new float[(int)Math.Floor(getLength())];//problem here... figure out exactly the correct size of the array.
+            
+            approximateLength = 0;
+            int j = 0;
+            i1 = intervals.ElementAt(0);
+            i2 = intervals.ElementAt(1);
+            for (int i = 0; i < adjustedIntervals.Length; i++)//possibly here
+            {
+                
+                PointF p1 = rawPointOnCurve(i1);
+                PointF p2 = rawPointOnCurve(i2);
+                while (approximateLength<i)
+                {
+                    i1 = intervals.ElementAt(j);
+                    i2 = intervals.ElementAt(j+1);//possibly here
+                    p1 = rawPointOnCurve(i1);
+                    p2 = rawPointOnCurve(i2);
+                    approximateLength += (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
+                    j++;
+                }
+                float t1 = approximateLength - (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
+                float t2 = approximateLength;
+                float t3 = i*1.0f;
+                adjustedIntervals[i] = ((t3 - t1) * i2 + (t2 - t3) * i1) / (t2 - t1);
+            }
+            */
+            approximateIntervals = new float[(int)getLength()*10];
+            
+            approximatePoints = new PointF[approximateIntervals.Length];
+            for (int i = 0; i < approximatePoints.Length; i++)
+            {
+                
+                approximateIntervals[i] = (i * 1.0f / approximatePoints.Length);
+            }
+            for (int i=0;i<approximatePoints.Length;i++)
+            {
+                approximatePoints[i] = rawPointOnCurve(approximateIntervals[i]);
+            }
+
+        }
+
+        public PointF[] getPoints()
+        {
+            return approximatePoints;
+        }
     }
 
     public class CircularArcCurve : Curve
@@ -44,6 +132,7 @@ namespace OsuSpectate.Beatmap
         public PointF[] approximatePoints;
         public CircularArcCurve(PointF[] points, float l)
         {
+            controlPoints = points;
             if (points.Length != 3)
             {
                 Console.WriteLine("invalid slider curve");
@@ -61,28 +150,24 @@ namespace OsuSpectate.Beatmap
             }
             if (Temp < Math.PI)
             {
-                NumberOfDegrees = (float)(l / radius);
+                NumberOfDegrees = -(float)(Length / radius);
             }
             if (Temp >= Math.PI)
             {
-                NumberOfDegrees = -(float)(l / radius);
+                NumberOfDegrees = (float)(Length / radius);
             }
-            approximatePoints = new PointF[30];
-            for (int i = 0; i < 30; i++)
-            {
-                approximatePoints[i] = pointOnCurve(1.0f * i / 30.0f);
-            }
+            ComputePoints();
+            
         }
         public override float getLength()
         {
             return Length;
         }
-        public override PointF[] getPoints()
+        
+        public override PointF rawPointOnCurve(float time)
         {
-            return approximatePoints;
-        }
-        public override PointF pointOnCurve(float time)
-        {
+            time = Math.Min(time, 1.0f);//force time to be in [0,1]
+            time = Math.Max(time, 0.0f);
             Vector2F C = new Vector2F(Center);
             Vector2F Point = new Vector2F((float)Math.Cos(NumberOfDegrees * time + StartDegree), (float)Math.Sin(NumberOfDegrees * time + StartDegree));
             Vector2F P = C + radius * Point;
@@ -113,9 +198,8 @@ namespace OsuSpectate.Beatmap
     public class LinearBezierCurve : Curve
     {
         LinearBezierSegment[] beziers;
-        PointF[] controlPoints;
+        
         float length;
-        public PointF[] approximatePoints;
         public LinearBezierCurve(PointF[] points, float l)
         {
             controlPoints = points;
@@ -142,35 +226,27 @@ namespace OsuSpectate.Beatmap
             }
             bezierList.Add(new LinearBezierSegment(last));
             beziers = bezierList.ToArray();
-            approximatePoints = new PointF[30];
-            
+            ComputePoints();
+
         }
         override public float getLength()
         {
             return length;
         }
-        public override PointF pointOnCurve(float time)
+        public override PointF rawPointOnCurve(float time)
         {
-            float unmodifiedLength = 0.0f;
-            for (int i = 0; i < beziers.Length; i++)
+            time = Math.Min(time, 1.0f);//force time to be in [0,1]
+            time = Math.Max(time, 0.0f);
+            if(time == 1.0f)
             {
-                unmodifiedLength += beziers[i].getLength();
+                return beziers.Last().rawPointOnCurve(1.0f);
             }
-            float totalDistance = 0.0f;
-            for (int i = 0; i < beziers.Length; i++)
-            {
-                if (totalDistance + beziers[i].getLength() > time * length)
-                {
-                    return beziers[i].pointOnCurve((time * length - unmodifiedLength) / beziers[i].getLength());
-                }
-                totalDistance += beziers[i].getLength();
-            }
-            return beziers.First().pointOnCurve(0.0f);
+            time = time * beziers.Length;
+            float p = time % 1.0f;
+            int i = (int)time;
+            return beziers.ElementAt(i).rawPointOnCurve(p);
         }
-        public override PointF[] getPoints()
-        {
-            return approximatePoints;
-        }
+        
     }
 
     //copied from opsu!
@@ -178,47 +254,19 @@ namespace OsuSpectate.Beatmap
     public class LinearBezierSegment : Curve
     {
         public PointF[] approximatePoints;
-        private PointF[] controlPoints;
-        private float length;
         public LinearBezierSegment(PointF[] points)
         {
             this.controlPoints = points;
-
-            // approximate by finding the length of all points
-            // (which should be the max possible length of the curve)
-            float approxlength = 0;
-            for (int i = 0; i < points.Length - 1; i++)
-                approxlength += (float)Math.Sqrt((points[i].X - points[i + 1].X) * (points[i].X - points[i + 1].X) + (points[i].Y - points[i + 1].Y) * (points[i].Y - points[i + 1].Y));
-            approximatePoints = new PointF[(int)approxlength];
-            for (int i = 0; i < approximatePoints.Length; i++)
-            {
-                approximatePoints[i] = pointOnCurve(1.0f * i / approximatePoints.Length);
-            }
-            length = 0.0f;
-            float max = 0.0f;
-            for (int i = 0; i < approximatePoints.Length - 1; i++)
-            {
-                max = Math.Max(max, (float)Math.Sqrt((approximatePoints[i].X - approximatePoints[i + 1].X) * (approximatePoints[i].X - approximatePoints[i + 1].X) + (approximatePoints[i].Y - approximatePoints[i + 1].Y) * (approximatePoints[i].Y - approximatePoints[i + 1].Y)));
-                length += (float)Math.Sqrt((approximatePoints[i].X - approximatePoints[i + 1].X) * (approximatePoints[i].X - approximatePoints[i + 1].X) + (approximatePoints[i].Y - approximatePoints[i + 1].Y) * (approximatePoints[i].Y - approximatePoints[i + 1].Y));
-            }
-            Console.WriteLine(max);
         }
         override public float getLength()
-        {
-
-
-            //    Console.WriteLine(length);
-            return length;
+        { 
+            return 1.0f;
         }
-        public override PointF[] getPoints()
+        override public PointF rawPointOnCurve(float t)
         {
-            return approximatePoints;
-        }
+            t = Math.Min(t, 1.0f);//force time to be in [0,1]
+            t = Math.Max(t, 0.0f);
 
-
-
-        override public PointF pointOnCurve(float t)
-        {
             PointF c = new PointF();
             int n = controlPoints.Length - 1;
             for (int i = 0; i <= n; i++)
@@ -227,7 +275,6 @@ namespace OsuSpectate.Beatmap
                 c.X += (float)(controlPoints[i].X * b);
                 c.Y += (float)(controlPoints[i].Y * b);
             }
-
             return c;
         }
 
