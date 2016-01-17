@@ -43,34 +43,42 @@ namespace OsuSpectate.GameplaySource
     public class RenderSlider : RenderObject
     {
         public OsuStandardSlider Slider;
+        public OsuStandardGameplayInput GameplayInput;
         public int SliderBorderTexture;
         private bool Initialized;
         public RenderSlider(OsuStandardSlider s, OsuStandardGameplayInput r)
         {
+            GameplayInput = r;
             Slider = s;
-
-            Bitmap SliderBMP = new Bitmap(512, 384);
+            float scale = 2.0f;
+            Bitmap SliderBMP = new Bitmap((int)(512*scale), (int)(384 * scale));
             Graphics SliderGFX = Graphics.FromImage(SliderBMP);
             SliderGFX.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             SliderGFX.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
             SliderGFX.Clear(Color.Transparent);
             float cs = r.GetCSRadius();
 
-            Pen backPen = new Pen(Color.White, cs * 2.0f);
+            Pen backPen = new Pen(Color.White, cs * 1.8f*scale);
             backPen.LineJoin = LineJoin.Round;
             backPen.EndCap = LineCap.Round;
             backPen.StartCap = LineCap.Round;
 
-            Pen frontPen = new Pen(Color.Black, cs * 1.75f);
+            Pen frontPen = new Pen(Color.Black, cs * 1.6f*scale);
             frontPen.LineJoin = LineJoin.Round;
             frontPen.EndCap = LineCap.Round;
             frontPen.StartCap = LineCap.Round;
 
             GraphicsPath path = new GraphicsPath();
-            path.AddLines(s.curve.getPoints().ToArray());
+            PointF[] pointsold = s.curve.getPoints().ToArray();
+            PointF[] points = new PointF[pointsold.Length];
+            for(int i=0;i<points.Length;i++)
+            {
+                points[i] = new PointF(pointsold[i].X * scale, pointsold[i].Y * scale);
+            }
+            path.AddLines(points);
             SliderGFX.DrawPath(backPen, path);
             SliderGFX.DrawPath(frontPen, path);
-            
+            SliderBMP.MakeTransparent(Color.Black);
 
 
             int ID = GL.GenTexture();

@@ -55,15 +55,16 @@ namespace OsuSpectate.GameplaySource
             RenderList = new List<RenderObject>();
             CurrentTime = TimeSpan.Zero;
             
-            for (int i = 0; i < Beatmap.GetHitObjectList().Count; i++)
+            for (int i = 0; i < Beatmap.GetHitObjectCount(); i++)
             {
-                switch (Beatmap.GetHitObjectList().ElementAt(i).getType())
+                OsuStandardHitObject ho = Beatmap.GetHitObject(i, Mods);
+                switch (ho.getType())
                 {
                     case ("hitcircle"):
-                        new RenderHitCircleBeginEvent((OsuStandardHitCircle)(Beatmap.GetHitObjectList().ElementAt(i)),EventList,RenderList,this);
+                        new RenderHitCircleBeginEvent((OsuStandardHitCircle)ho,EventList,RenderList,this);
                         break;
                     case ("slider"):
-                        new RenderSliderBeginEvent((OsuStandardSlider)(Beatmap.GetHitObjectList().ElementAt(i)), EventList, RenderList, this);
+                        new RenderSliderBeginEvent((OsuStandardSlider)ho, EventList, RenderList, this);
                         break;
 
                 }

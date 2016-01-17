@@ -15,6 +15,7 @@ namespace OsuSpectate.Skin
     {
         string path;
         bool HD;
+        Color[] comboColors;
         #region variables
         //all modes
         //interface
@@ -172,11 +173,17 @@ namespace OsuSpectate.Skin
             reverseArrow = loadSkinElement(LoadCount, "reversearrow", "png");
             inputOverlayKey = loadSkinElement(LoadCount, "inputoverlay-key", "png");
             inputOverlayBackground = loadSkinElement(LoadCount, "inputoverlay-background", "png");
-
+            comboColors = new Color[6];
+            comboColors[0] = Color.FromArgb(145, 229, 103);
+            comboColors[1] = Color.FromArgb(255, 213, 128);
+            comboColors[2] = Color.FromArgb(242, 121, 97);
+            comboColors[3] = Color.FromArgb(255, 140, 179);
+            comboColors[4] = Color.FromArgb(187, 103, 229);
+            comboColors[5] = Color.FromArgb(140, 236, 255);
 
             Console.WriteLine(LoadCount[0] + LoadCount[1] + LoadCount[2] + LoadCount[3] + " Textures Loaded,");
-            Console.WriteLine(LoadCount[0] + " HD from " + p.Split('\\').Last());
-            Console.WriteLine(LoadCount[1] + " SD from " + p.Split('\\').Last());
+            Console.WriteLine(LoadCount[0] + " HD from " + p.Split('\\').Reverse().ElementAt(1));
+            Console.WriteLine(LoadCount[1] + " SD from " + p.Split('\\').Reverse().ElementAt(1));
             Console.WriteLine(LoadCount[2] + " HD from default");
             Console.WriteLine(LoadCount[3] + " SD from default");
         }
@@ -244,7 +251,6 @@ namespace OsuSpectate.Skin
                 }
 
             }
-
             BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
             bmp.UnlockBits(data);
@@ -261,6 +267,7 @@ namespace OsuSpectate.Skin
         //interface
 
         public int GetMenuBackground() { return menuBackground; } //jpeg
+        public Color[] getComboColors() { return comboColors; }
         //score
         public int GetScore0() { return score0; }
         public int GetScore1() { return score1; }

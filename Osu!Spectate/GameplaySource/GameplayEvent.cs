@@ -172,8 +172,8 @@ namespace OsuSpectate.GameplaySource
         List<RenderObject> RenderList;
         OsuStandardHitCircle Circle;
         RenderHitCircle Render;
-        public RenderHitCircleBeginEvent(OsuStandardHitCircle circle, List<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardReplay replay)
-            : base(circle.getStart().Subtract(circle.getBeatmap().GetARMilliseconds()))
+        public RenderHitCircleBeginEvent(OsuStandardHitCircle circle, List<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardGameplayInput replay)
+            : base(circle.getStart().Subtract(circle.getBeatmap().GetARMilliseconds(replay.GetMods())))
         {
             Parent = parent;
             Circle = circle;
@@ -198,15 +198,15 @@ namespace OsuSpectate.GameplaySource
             : base(circle.getEnd())
         {
             //put this after circle.getEnd()
-            //.Add(circle.getBeatmap().GetOD50Milliseconds()) 
+            //.Add(circle.getBeatmap().GetOD50Milliseconds(render.GameplayInput.GetMods())) 
             Parent = parent;
             RenderList = renderList;
             Render = render;
+            
             Parent.Add(this);
         }
         public override void handle()
         {
-            Console.WriteLine("end event handled");
             RenderList.Remove(Render);
             Parent.Remove(this);
         }
@@ -217,8 +217,8 @@ namespace OsuSpectate.GameplaySource
         List<RenderObject> RenderList;
         OsuStandardSlider Slider;
         RenderSlider Render;
-        public RenderSliderBeginEvent(OsuStandardSlider slider, List<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardReplay replay)
-            : base(slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds()))
+        public RenderSliderBeginEvent(OsuStandardSlider slider, List<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardGameplayInput replay)
+            : base(slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(replay.GetMods())))
         {
             Parent = parent;
             Slider = slider;
@@ -240,7 +240,7 @@ namespace OsuSpectate.GameplaySource
         List<RenderObject> RenderList;
         RenderSlider Render;
         public RenderSliderEndEvent(OsuStandardSlider slider, RenderSlider render, List<GameplayEvent> parent, List<RenderObject> renderList)
-            : base(slider.getEnd().Add(slider.getBeatmap().GetOD50Milliseconds()))
+            : base(slider.getEnd().Add(slider.getBeatmap().GetOD50Milliseconds(render.GameplayInput.GetMods())))
         {
             Parent = parent;
             RenderList = renderList;

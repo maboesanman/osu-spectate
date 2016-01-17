@@ -16,7 +16,7 @@ namespace OsuSpectate.Beatmap
 {
     public class OsuStandardBeatmap
     {
-        ReplayAPI.Mods mods = 0;
+        
 
         string OsuFileFormat;
         int BackgroundTexture;
@@ -66,7 +66,7 @@ namespace OsuSpectate.Beatmap
         //COLORS
         Color[] ComboColors;        //Combo# (Integer List) is a list of three numbers, each from 0 - 255 defining an RGB color.
         //HIT OBJECTS
-        List<OsuStandardHitObject> HitObjectList;
+        private List<OsuStandardHitObject> HitObjectList;
 
 
         public OsuStandardBeatmap(string path)
@@ -370,19 +370,19 @@ namespace OsuSpectate.Beatmap
 
             Console.WriteLine("finished loading beatmap: " + Title);
         }
-        public TimeSpan GetOD300Milliseconds()
+        public TimeSpan GetOD300Milliseconds(ReplayAPI.Mods mods)
         {
             return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (78.0f - OverallDifficulty * 6.0f)));
         }
-        public TimeSpan GetOD100Milliseconds()
+        public TimeSpan GetOD100Milliseconds(ReplayAPI.Mods mods)
         {
             return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (138.0f - OverallDifficulty * 8.0f)));
         }
-        public TimeSpan GetOD50Milliseconds()
+        public TimeSpan GetOD50Milliseconds(ReplayAPI.Mods mods)
         {
             return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (198.0f - OverallDifficulty * 10.0f)));
         }
-        public TimeSpan GetARMilliseconds()
+        public TimeSpan GetARMilliseconds(ReplayAPI.Mods mods)
         {
             if ((((int)mods) / 16) % 2 == 1)
             {
@@ -390,7 +390,7 @@ namespace OsuSpectate.Beatmap
             }
             return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * ((1800.0f - (ApproachRate) * 120.0f) - (Math.Max((ApproachRate - 5.0f) * 30.0f, 0.0f)))));
         }
-        public float GetCSRadius()
+        public float GetCSRadius(ReplayAPI.Mods mods)
         {
             if ((((int)mods) / 16) % 2 == 1)
             {
@@ -398,19 +398,21 @@ namespace OsuSpectate.Beatmap
             }
             return 4.0f * (12.0f - CircleSize);
         }
-        public void setMods(ReplayAPI.Mods m)
+        public int GetHitObjectCount()
         {
-            if (((mods & ReplayAPI.Mods.HardRock) ^ (m & ReplayAPI.Mods.HardRock)) == ReplayAPI.Mods.HardRock)
-            {
-                for (int i = 0; i < HitObjectList.Count; i++)
-                {
-                    HitObjectList.ElementAt(i).flipY();
-                    Console.WriteLine("flipped");
-                }
-            }
-            mods = m;
-
+            return HitObjectList.Count;
         }
+        public OsuStandardHitObject GetHitObject(int i, ReplayAPI.Mods mods)
+        {
+            if ((mods & ReplayAPI.Mods.HardRock) == ReplayAPI.Mods.HardRock)
+            {
+                return HitObjectList.ElementAt(i).flipY();
+            } else
+            {
+                return HitObjectList.ElementAt(i);
+            }
+        }
+        
         #region getters
         public int GetBackgroundTexture() { return BackgroundTexture; }
         public string GetOsuFileFormat() { return OsuFileFormat; }
@@ -460,8 +462,6 @@ namespace OsuSpectate.Beatmap
         public SortedList<int, TimingPoint> GetTimingPointList() { return TimingPointList; }
         //COLORS
         public Color[] GetComboColors() { return ComboColors; }        //Combo# (Integer List) is a list of three numbers, each from 0 - 255 defining an RGB color.
-        //HIT OBJECTS
-        public List<OsuStandardHitObject> GetHitObjectList() { return HitObjectList; }
         #endregion
     }
 

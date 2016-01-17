@@ -75,7 +75,7 @@ namespace OsuSpectate.Beatmap
                     intervals.Add(actualEndParameter);
                 }
             }
-            float[] adjustedIntervals = new float[(int)Math.Floor(getLength())];//problem here... figure out exactly the correct size of the array.
+            float[] adjustedIntervals = new float[(int)Math.Floor(getLength())-1];//problem here... figure out exactly the correct size of the array.
             
             approximateLength = 0;
             int j = 0;
@@ -101,7 +101,7 @@ namespace OsuSpectate.Beatmap
                 adjustedIntervals[i] = ((t3 - t1) * i2 + (t2 - t3) * i1) / (t2 - t1);
             }
             */
-            approximateIntervals = new float[(int)getLength()*10];
+            approximateIntervals = new float[(int)getLength()];
             
             approximatePoints = new PointF[approximateIntervals.Length];
             for (int i = 0; i < approximatePoints.Length; i++)

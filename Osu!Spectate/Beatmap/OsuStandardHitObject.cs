@@ -16,7 +16,7 @@ namespace OsuSpectate.Beatmap
         public abstract string getType();
         public abstract TimeSpan getStart();
         public abstract TimeSpan getEnd();
-        public abstract void flipY();
+        public abstract OsuStandardHitObject flipY();
         public static OsuStandardHitObject getNewHitobject(string[] split, int comboIndex, int comboNumber, OsuStandardBeatmap b)
         {
             int x = Int32.Parse(split[3]);
@@ -42,8 +42,8 @@ namespace OsuSpectate.Beatmap
     public class OsuStandardHitCircle : OsuStandardHitObject
     {//TODO
         public OsuStandardBeatmap beatmap;
-        public int x;
-        public int y;
+        public float x;
+        public float y;
         public TimeSpan time; //milliseconds
         public bool newCombo;
         public bool hitsoundWhistle;
@@ -57,27 +57,28 @@ namespace OsuSpectate.Beatmap
             comboNumber = comboN;
             comboIndex = comboI;
             beatmap = b;
-            x = int.Parse(s[0]);
-            y = int.Parse(s[1]);
+            x = float.Parse(s[0]);
+            y = float.Parse(s[1]);
             time = new TimeSpan(TimeSpan.TicksPerMillisecond * long.Parse(s[2]));
             newCombo = (s[3] == "5");
-
-
         }
+
         public override string getType() { return "hitcircle"; }
         public override TimeSpan getStart() { return time; }
         public override TimeSpan getEnd() { return time; }
         public override OsuStandardBeatmap getBeatmap() { return beatmap; }
-        public override void flipY()
+        public override OsuStandardHitObject flipY()
         {
-            y = 384 - y;
+            OsuStandardHitCircle result = (OsuStandardHitCircle)this.MemberwiseClone();
+            result.y = 384.0f - result.y;
+            return result;
         }
     }
     public class OsuStandardSlider : OsuStandardHitObject
     {//TODO
         public OsuStandardBeatmap beatmap;
-        public int x;
-        public int y;
+        public float x;
+        public float y;
         public float[] xList;
         public float[] yList;
         public PointF[] points;
@@ -104,8 +105,8 @@ namespace OsuSpectate.Beatmap
             comboNumber = comboN;
             comboIndex = comboI;
 
-            x = int.Parse(tokens[0]);
-            y = int.Parse(tokens[1]);
+            x = float.Parse(tokens[0]);
+            y = float.Parse(tokens[1]);
             startTime = new TimeSpan(TimeSpan.TicksPerMillisecond * long.Parse(tokens[2]));
             newCombo = (tokens[3] == "5");
 
@@ -152,15 +153,18 @@ namespace OsuSpectate.Beatmap
         public override TimeSpan getStart() { return startTime; }
         public override TimeSpan getEnd() { return startTime; }//TODO
         public override OsuStandardBeatmap getBeatmap() { return beatmap; }
-        public override void flipY()
+        public override OsuStandardHitObject flipY()
         {
-            for (int i = 0; i < yList.Length; i++)
+            OsuStandardSlider result = (OsuStandardSlider)this.MemberwiseClone();
+            
+            for (int i = 0; i < result.yList.Length; i++)
             {
-                points[i].Y = 348.0f - points[i].Y;
-                yList[i] = 384 - yList[i];
+                result.points[i].Y = 384.0f - result.points[i].Y;
+                result.yList[i] = 384 - result.yList[i];
             }
-            y = 384 - y;
-            curve = Curve.getCurve(sliderType, points, pixelLength);
+            result.y = 384 - result.y;
+            result.curve = Curve.getCurve(result.sliderType, result.points, result.pixelLength);
+            return result;
         }
     }
     public class OsuStandardSpinner : OsuStandardHitObject
@@ -187,6 +191,9 @@ namespace OsuSpectate.Beatmap
         public override TimeSpan getStart() { return startTime; }
         public override TimeSpan getEnd() { return endTime; }
         public override OsuStandardBeatmap getBeatmap() { return beatmap; }
-        public override void flipY() { }
+        public override OsuStandardHitObject flipY()
+        {
+            return this;
+        }
     }
 }
