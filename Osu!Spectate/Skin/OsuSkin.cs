@@ -170,6 +170,8 @@ namespace OsuSpectate.Skin
             approachCircle = loadSkinElement(LoadCount, "approachcircle", "png");
             hitCircle = loadSkinElement(LoadCount, "hitcircle", "png");
             hitCircleOverlay = loadSkinElement(LoadCount, "hitcircleoverlay", "png");
+            sliderBall = new int[1]; sliderBall[0] = loadSkinElement(LoadCount, "sliderb0", "png");
+            sliderFollowCircle = loadSkinElement(LoadCount, "sliderfollowcircle", "png");
             reverseArrow = loadSkinElement(LoadCount, "reversearrow", "png");
             inputOverlayKey = loadSkinElement(LoadCount, "inputoverlay-key", "png");
             inputOverlayBackground = loadSkinElement(LoadCount, "inputoverlay-background", "png");

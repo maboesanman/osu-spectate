@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Drawing;
+
 namespace OsuSpectate
 {
     public class Computation
@@ -29,6 +31,10 @@ namespace OsuSpectate
             {
                 return (height * windowHeight / 2.0f - height * windowHeight * 5.0f / 12.0f + (1.0f - y / 384.0f) * height * windowHeight * 5.0f / 6.0f) / windowHeight + OriginY;
             }
+        }
+        public static float Distance(PointF p1, PointF p2)
+        {
+            return (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
         }
     }
 }

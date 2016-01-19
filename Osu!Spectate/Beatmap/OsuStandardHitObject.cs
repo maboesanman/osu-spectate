@@ -33,7 +33,7 @@ namespace OsuSpectate.Beatmap
                 case 2:
                     return new OsuStandardSpinner(split, comboIndex, comboNumber, b);
                 default:
-                    Console.WriteLine("wut " + split[3]);
+                    Console.WriteLine("invalid hitobject encountered; skipping.");
                     return null;
 
             }
@@ -83,7 +83,7 @@ namespace OsuSpectate.Beatmap
         public float[] yList;
         public PointF[] points;
         public TimeSpan startTime;
-
+        public TimeSpan endTime;
         public bool newCombo;
         public bool hitsoundWhistle;
         public bool hitsoundFinish;
@@ -127,7 +127,7 @@ namespace OsuSpectate.Beatmap
             yList[0] = y;
             points[0] = new PointF(x, y);
             this.repeat = int.Parse(tokens[6]);
-            this.pixelLength = float.Parse(tokens[7]);
+            this.pixelLength = float.Parse(tokens[7])*repeat;
             if (tokens.Length > 8)
             {
                 String[] edgeHitSoundTokens = tokens[8].Split(new char[2] { '\\', '|' });
@@ -147,11 +147,16 @@ namespace OsuSpectate.Beatmap
                     edgeAddition[j][1] = byte.Parse(tedgeAddition[1]);
                 }
             }
-            curve = Curve.getCurve(sliderType, points, pixelLength);
+            curve = Curve.getCurve(sliderType, points, pixelLength, repeat);
+        }
+        public void updateTiming()
+        {
+            endTime = startTime.Add(beatmap.GetSliderDuration(startTime, pixelLength));
+            
         }
         public override string getType() { return "slider"; }
         public override TimeSpan getStart() { return startTime; }
-        public override TimeSpan getEnd() { return startTime; }//TODO
+        public override TimeSpan getEnd() { return endTime; }
         public override OsuStandardBeatmap getBeatmap() { return beatmap; }
         public override OsuStandardHitObject flipY()
         {
@@ -163,7 +168,7 @@ namespace OsuSpectate.Beatmap
                 result.yList[i] = 384 - result.yList[i];
             }
             result.y = 384 - result.y;
-            result.curve = Curve.getCurve(result.sliderType, result.points, result.pixelLength);
+            result.curve = Curve.getCurve(result.sliderType, result.points, result.pixelLength, result.repeat);
             return result;
         }
     }

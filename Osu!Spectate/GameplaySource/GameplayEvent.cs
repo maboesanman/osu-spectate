@@ -240,7 +240,7 @@ namespace OsuSpectate.GameplaySource
         List<RenderObject> RenderList;
         RenderSlider Render;
         public RenderSliderEndEvent(OsuStandardSlider slider, RenderSlider render, List<GameplayEvent> parent, List<RenderObject> renderList)
-            : base(slider.getEnd().Add(slider.getBeatmap().GetOD50Milliseconds(render.GameplayInput.GetMods())))
+            : base(slider.getEnd())
         {
             Parent = parent;
             RenderList = renderList;

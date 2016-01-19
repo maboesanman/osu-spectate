@@ -62,7 +62,8 @@ namespace OsuSpectate.Beatmap
         //storyboard stuff i guess...
         //TIMING POINTS
         //Timing Points describe a number of properties regarding offsets, beats per minute and hit sounds. Offset (Integer, milliseconds) defines when the Timing Point takes effect. Milliseconds per Beat (Float) defines the beats per minute of the song. For certain calculations, it is easier to use milliseconds per beat. Meter (Integer) defines the number of beats in a measure. Sample Type (Integer) defines the type of hit sound samples that are used. Sample Set (Integer) defines the set of hit sounds that are used. Volume (Integer) is a value from 0 - 100 that defines the volume of hit sounds. Kiai Mode (Boolean) defines whether or not Kiai Time effects are active. Inherited (Boolean) defines whether or not the Timing Point is an inherited Timing Point.
-        SortedList<int, TimingPoint> TimingPointList;
+        List<TimingPoint> TimingPointList;
+        List<TimingPoint> NonInheritedTimingPointList;
         //COLORS
         Color[] ComboColors;        //Combo# (Integer List) is a list of three numbers, each from 0 - 255 defining an RGB color.
         //HIT OBJECTS
@@ -71,6 +72,8 @@ namespace OsuSpectate.Beatmap
 
         public OsuStandardBeatmap(string path)
         {
+            TimingPointList = new List<TimingPoint>(0);
+            NonInheritedTimingPointList = new List<TimingPoint>(0);
             string BackgroundFileName = null;
             string line;
             string title;
@@ -292,7 +295,23 @@ namespace OsuSpectate.Beatmap
                                 }
                                 break;
                             case "[TimingPoints]":
-                                //TODO
+                                while (file.Peek() != '[')
+                                {
+                                    if ((line = file.ReadLine()) != null)
+                                    {
+                                        string[] args = line.Split(',');
+                                        if(args.Length<8)
+                                        {
+                                            break;
+                                        }
+                                        TimingPoint p = new TimingPoint(line);
+                                        TimingPointList.Add(p);
+                                        if(!p.Inherited)
+                                        {
+                                            NonInheritedTimingPointList.Add(p);
+                                        }
+                                    }
+                                }
                                 break;
                             case "[Colours]":
                                 List<Color> TempColorList = new List<Color>();
@@ -367,7 +386,15 @@ namespace OsuSpectate.Beatmap
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             HitObjectList.RemoveAll(item => item == null);
-
+            TimingPointList.Sort();
+            NonInheritedTimingPointList.Sort();
+            for(int i = 0; i < HitObjectList.Count; i++)
+            {
+                if(HitObjectList.ElementAt(i).getType()=="slider")
+                {
+                    ((OsuStandardSlider)HitObjectList.ElementAt(i)).updateTiming();
+                }
+            }
             Console.WriteLine("finished loading beatmap: " + Title);
         }
         public TimeSpan GetOD300Milliseconds(ReplayAPI.Mods mods)
@@ -410,6 +437,32 @@ namespace OsuSpectate.Beatmap
             } else
             {
                 return HitObjectList.ElementAt(i);
+            }
+        }
+        public TimeSpan GetSliderDuration(TimeSpan time, float length)
+        {
+            int index1=0;
+            while(TimingPointList.ElementAt(index1).Offset.CompareTo(time)<=0)
+            {
+                index1++;
+                if (index1 >= TimingPointList.Count)
+                {break;}
+            }
+            TimingPoint inherited = TimingPointList.ElementAt(index1-1);
+            int index2 = 0;
+            while (NonInheritedTimingPointList.ElementAt(index2).Offset.CompareTo(time) <= 0)
+            {
+                index2++;
+                if(index2>=NonInheritedTimingPointList.Count)
+                {break;}
+            }
+            TimingPoint parent = NonInheritedTimingPointList.ElementAt(index2-1);
+            if(!inherited.Inherited)
+            {
+                return TimeSpan.FromMilliseconds(length / 100.0f * parent.BeatLength.TotalMilliseconds / SliderMultiplier);
+            } else
+            {
+                return TimeSpan.FromMilliseconds(length / 100.0f * parent.BeatLength.TotalMilliseconds / SliderMultiplier* (-0.01f * inherited.BeatLength.TotalMilliseconds));
             }
         }
         
@@ -459,18 +512,49 @@ namespace OsuSpectate.Beatmap
         //storyboard stuff i guess...
         //TIMING POINTS
         //Timing Points describe a number of properties regarding offsets, beats per minute and hit sounds. Offset (Integer, milliseconds) defines when the Timing Point takes effect. Milliseconds per Beat (Float) defines the beats per minute of the song. For certain calculations, it is easier to use milliseconds per beat. Meter (Integer) defines the number of beats in a measure. Sample Type (Integer) defines the type of hit sound samples that are used. Sample Set (Integer) defines the set of hit sounds that are used. Volume (Integer) is a value from 0 - 100 that defines the volume of hit sounds. Kiai Mode (Boolean) defines whether or not Kiai Time effects are active. Inherited (Boolean) defines whether or not the Timing Point is an inherited Timing Point.
-        public SortedList<int, TimingPoint> GetTimingPointList() { return TimingPointList; }
+        public List<TimingPoint> GetTimingPointList() { return TimingPointList; }
         //COLORS
         public Color[] GetComboColors() { return ComboColors; }        //Combo# (Integer List) is a list of three numbers, each from 0 - 255 defining an RGB color.
         #endregion
     }
 
-    public struct TimingPoint
+    public struct TimingPoint : IComparable<TimingPoint>
     {
+        public TimeSpan Offset;
+        public TimeSpan BeatLength;
+        public int Meter;//beats per measure
+        public int SampleType;
+        public int SampleSet;
+        public int Volume;//0 to 100
+        public bool KiaiTime;
+        public bool Inherited;
 
-    }
-    public struct InheritedTimingPoint
-    {
-
+        public TimingPoint(string initialize)
+        {
+            string[] args = initialize.Split(',');
+            Offset = TimeSpan.FromMilliseconds(long.Parse(args[0]));
+            BeatLength = TimeSpan.FromMilliseconds(float.Parse(args[1]));
+            Meter = int.Parse(args[2]);
+            SampleType = int.Parse(args[3]);
+            SampleSet = int.Parse(args[4]);
+            Volume = int.Parse(args[5]);
+            Inherited = int.Parse(args[6]) == 0;
+            KiaiTime = int.Parse(args[7]) == 1;
+        }
+        public TimingPoint(TimeSpan time)
+        {
+            Offset = time;
+            BeatLength = new TimeSpan();
+            Meter = 0;
+            SampleType = 0;
+            SampleSet = 0;
+            Volume = 0;
+            Inherited = false;
+            KiaiTime = false;
+        }
+        public int CompareTo(TimingPoint other)
+        {
+            return this.Offset.CompareTo(other.Offset);
+        }
     }
 }

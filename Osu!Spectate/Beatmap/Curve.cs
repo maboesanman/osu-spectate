@@ -5,113 +5,112 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Drawing;
+using OsuSpectate;
 
 namespace OsuSpectate.Beatmap
 {
     abstract public class Curve
     {
         public PointF[] controlPoints;
-        float[] approximateIntervals;
+        float[] approximateIndices;
         PointF[] approximatePoints;
         float actualEndParameter;
+        int repeatCount;
         abstract public PointF rawPointOnCurve(float time);
         public PointF pointOnCurve(float time)//adjusted for speed, time is between 0 and 1, where 0 is the start and 1 is the correct length away
         {
-            time = Math.Min(time, 1.0f);//force time to be in [0,1]
-            time = Math.Max(time, 0.0f);
-            float t1 = approximateIntervals[(int)Math.Min(Math.Floor(time * getLength()), approximateIntervals.Length - 1)];
-            float t2 = approximateIntervals[(int)Math.Min(Math.Ceiling(time * getLength()), approximateIntervals.Length - 1)];
-            if(t1==t2)
+            time = time * getLength();
+            time = time % (2.0f * getLength() / repeatCount);
+            time = getLength() / repeatCount - Math.Abs(time - getLength() / repeatCount);
+            float currentLength = 0.0f;
+            PointF p1;
+            PointF p2;
+            int i = 0;
+            while (currentLength < time&&i<approximateIndices.Length-2)
             {
-                return rawPointOnCurve(t1);
+                p1 = rawPointOnCurve(approximateIndices[i]);
+                p2 = rawPointOnCurve(approximateIndices[i + 1]);
+                currentLength += Computation.Distance(p1, p2);
+                i++;
             }
-            return rawPointOnCurve(t1+(time-t1)/(t2-t1));
+            float i1 = approximateIndices[i];
+            float i2 = approximateIndices[i+1];
+            float d1 = currentLength - Computation.Distance(rawPointOnCurve(approximateIndices[i+1]), rawPointOnCurve(approximateIndices[i]));
+            float d2 = currentLength;
+            float d3 = time;
+            return rawPointOnCurve((d3 - d1) / (d2 - d1) * (i2 - i1) + i1);
         }
         abstract public float getLength();
         //      abstract public float getStartAngle();
         //      abstract public float getEndAngle();
-        public static Curve getCurve(char sliderType, PointF[] points, float length)
+        public static Curve getCurve(char sliderType, PointF[] points, float length, int repeat)
         {
+            /*
+            Console.Write(sliderType + " ");
+            for(int i=0;i<points.Length;i++)
+            {
+                Console.Write("(" + points[i].X + ", " + points[i].Y + "), ");
+            }
+            Console.WriteLine(length);
+            */
+            Curve c;
             switch (sliderType)
             {
                 case ('P')://pass through
-                    return new CircularArcCurve(points, length);
+                    c = new CircularArcCurve(points, length);
+                    break;
                 case ('C')://catmull
-                    return new LinearBezierCurve(points, length);
+                    c = new LinearBezierCurve(points, length);
+                    break;
                 case ('L')://linear
-                    return new LinearBezierCurve(points, length);
+                    c = new LinearBezierCurve(points, length);
+                    break;
                 case ('B')://bezier
-                    return new LinearBezierCurve(points, length);
+                    c = new LinearBezierCurve(points, length);
+                    break;
                 default:
                     Console.WriteLine("curve type not recognized");
                     return null;
             }
+            c.repeatCount = repeat;
+            return c;
         }
         public void ComputePoints()
         {
-            /*
-            List<float> intervals = new List<float>(0);
-            float length = getLength();
-            float approximateLength = 0;
-            float i1;
-            float i2;
-            for (int i = 0; i < (int)Math.Ceiling(length); i++)
+            List<float> indices = new List<float>(0);
+            float currentLength = 0.0f;
+            float currentIndex = 0.0f;
+            float indexDifference=0.0f;
+            PointF p1 = rawPointOnCurve(currentIndex);
+            PointF p2;
+            indices.Add(currentIndex);
+            while(currentLength<getLength())
             {
-                i1 = 1.0f * i / (int)Math.Ceiling(length);
-                i2 = 1.0f * (i + 1) / (int)Math.Ceiling(length);
-                PointF p1 = rawPointOnCurve(i1);
-                PointF p2 = rawPointOnCurve(i2);
-                intervals.Add(i1);
-                approximateLength += (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
-                if(approximateLength>length)
+                indexDifference = 0.1f;
+                p2 = rawPointOnCurve(currentIndex + indexDifference);
+                while (Computation.Distance(p1,p2)>.33f)
                 {
-                    Vector2F v1 = new Vector2F(p1);
-                    Vector2F v2 = new Vector2F(p2);
-                    float t1 = approximateLength - (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
-                    float t2 = approximateLength;
-                    float t3 = length;
-                    actualEndParameter = (t3 - t1) + i * 1.0f;
-                    
-                    intervals.Add(actualEndParameter);
-                }
+                    indexDifference = indexDifference / 2.0f;
+                    p2 = rawPointOnCurve(currentIndex + indexDifference);
+                }//now p1 and p2 are less than .33 apart
+                currentLength += Computation.Distance(p1, p2);
+                currentIndex += indexDifference;
+                p1 = rawPointOnCurve(currentIndex);
+                indices.Add(currentIndex);
+                //Console.WriteLine("found a point "+indexDifference+" "+currentIndex+" "+currentLength);
             }
-            float[] adjustedIntervals = new float[(int)Math.Floor(getLength())-1];//problem here... figure out exactly the correct size of the array.
-            
-            approximateLength = 0;
-            int j = 0;
-            i1 = intervals.ElementAt(0);
-            i2 = intervals.ElementAt(1);
-            for (int i = 0; i < adjustedIntervals.Length; i++)//possibly here
-            {
-                
-                PointF p1 = rawPointOnCurve(i1);
-                PointF p2 = rawPointOnCurve(i2);
-                while (approximateLength<i)
-                {
-                    i1 = intervals.ElementAt(j);
-                    i2 = intervals.ElementAt(j+1);//possibly here
-                    p1 = rawPointOnCurve(i1);
-                    p2 = rawPointOnCurve(i2);
-                    approximateLength += (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
-                    j++;
-                }
-                float t1 = approximateLength - (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
-                float t2 = approximateLength;
-                float t3 = i*1.0f;
-                adjustedIntervals[i] = ((t3 - t1) * i2 + (t2 - t3) * i1) / (t2 - t1);
-            }
-            */
-            approximateIntervals = new float[(int)getLength()];
-            
-            approximatePoints = new PointF[approximateIntervals.Length];
-            for (int i = 0; i < approximatePoints.Length; i++)
-            {
-                
-                approximateIntervals[i] = (i * 1.0f / approximatePoints.Length);
-            }
+            float i1 = currentIndex - indexDifference;
+            float i2 = currentIndex;
+            float d1 = currentLength - Computation.Distance(rawPointOnCurve(indices.ElementAt(indices.Count - 1)), rawPointOnCurve(indices.ElementAt(indices.Count - 2)));
+            float d2 = currentLength;
+            float d3 = getLength();
+            indices.Add((d3 - d1) / (d2 - d1) * (i2 - i1) + i1);
+
+            approximateIndices = indices.ToArray();
+            approximatePoints = new PointF[indices.Count];
             for (int i=0;i<approximatePoints.Length;i++)
             {
-                approximatePoints[i] = rawPointOnCurve(approximateIntervals[i]);
+                approximatePoints[i] = rawPointOnCurve(indices.ElementAt(i));
             }
 
         }
@@ -166,8 +165,7 @@ namespace OsuSpectate.Beatmap
         
         public override PointF rawPointOnCurve(float time)
         {
-            time = Math.Min(time, 1.0f);//force time to be in [0,1]
-            time = Math.Max(time, 0.0f);
+            
             Vector2F C = new Vector2F(Center);
             Vector2F Point = new Vector2F((float)Math.Cos(NumberOfDegrees * time + StartDegree), (float)Math.Sin(NumberOfDegrees * time + StartDegree));
             Vector2F P = C + radius * Point;
@@ -235,15 +233,23 @@ namespace OsuSpectate.Beatmap
         }
         public override PointF rawPointOnCurve(float time)
         {
-            time = Math.Min(time, 1.0f);//force time to be in [0,1]
-            time = Math.Max(time, 0.0f);
-            if(time == 1.0f)
+            //time = Math.Min(time, 1.0f);//force time to be in [0,1]
+            //time = Math.Max(time, 0.0f);
+            if(time >= 1.0f)
             {
-                return beziers.Last().rawPointOnCurve(1.0f);
+                return beziers.Last().rawPointOnCurve(time);
+            }
+            if (time <= 0.0f)
+            {
+                return beziers.First().rawPointOnCurve(time);
             }
             time = time * beziers.Length;
+            
             float p = time % 1.0f;
+            
             int i = (int)time;
+            i = Math.Min(i, beziers.Count()-1);
+            i = Math.Max(0, i);
             return beziers.ElementAt(i).rawPointOnCurve(p);
         }
         
@@ -264,9 +270,10 @@ namespace OsuSpectate.Beatmap
         }
         override public PointF rawPointOnCurve(float t)
         {
-            t = Math.Min(t, 1.0f);//force time to be in [0,1]
-            t = Math.Max(t, 0.0f);
+            //t = Math.Min(t, 1.0f);//force time to be in [0,1]
+            //t = Math.Max(t, 0.0f);
 
+            
             PointF c = new PointF();
             int n = controlPoints.Length - 1;
             for (int i = 0; i <= n; i++)
@@ -291,6 +298,7 @@ namespace OsuSpectate.Beatmap
             // This function is less efficient, but is more likely to not overflow when N and K are large.
             // Taken from:  http://blog.plover.com/math/choose.html
             //
+            
             long r = 1;
             long d;
             if (K > N) return 0;

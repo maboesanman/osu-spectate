@@ -69,11 +69,13 @@ namespace OsuSpectate.GameplaySource
             frontPen.StartCap = LineCap.Round;
 
             GraphicsPath path = new GraphicsPath();
-            PointF[] pointsold = s.curve.getPoints().ToArray();
-            PointF[] points = new PointF[pointsold.Length];
+            
+            PointF[] points = new PointF[(int)(s.curve.getLength()/s.repeat*3)];
+            PointF pointOnCurve;
             for(int i=0;i<points.Length;i++)
             {
-                points[i] = new PointF(pointsold[i].X * scale, pointsold[i].Y * scale);
+                pointOnCurve = s.curve.pointOnCurve(1.0f * i / (1.0f*points.Length));
+                points[i] = new PointF(pointOnCurve.X * scale, pointOnCurve.Y * scale);
             }
             path.AddLines(points);
             SliderGFX.DrawPath(backPen, path);

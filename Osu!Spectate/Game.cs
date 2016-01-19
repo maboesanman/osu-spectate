@@ -42,6 +42,7 @@ namespace OsuSpectate
             base.Title = "osu!spectate";
 
             OsuSkin Skin = new OsuSkin(@"C:\Program Files (x86)\osu!\Skins\Aesthetic\", true);
+            //OsuSkin Skin = new OsuSkin(@"\\", true);
             Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\292301 xi - Blue Zenith\xi - Blue Zenith (Asphyxia) [FOUR DIMENSIONS].osu");
             GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - xi - Blue Zenith [FOUR DIMENSIONS] (2016-01-02) Osu.osr", Beatmap, true));
             GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\cptnXn - xi - Blue Zenith [FOUR DIMENSIONS] (2015-12-18) Osu.osr", Beatmap, true));
