@@ -12,12 +12,13 @@ namespace OsuSpectate.Beatmap
 {
     public abstract class OsuStandardHitObject
     {
+        public abstract int getId();
         public abstract OsuStandardBeatmap getBeatmap();
         public abstract string getType();
         public abstract TimeSpan getStart();
         public abstract TimeSpan getEnd();
         public abstract OsuStandardHitObject flipY();
-        public static OsuStandardHitObject getNewHitobject(string[] split, int comboIndex, int comboNumber, OsuStandardBeatmap b)
+        public static OsuStandardHitObject getNewHitobject(string[] split, int comboIndex, int comboNumber, OsuStandardBeatmap b, int i)
         {
             int x = Int32.Parse(split[3]);
             int y=-1;
@@ -27,11 +28,11 @@ namespace OsuSpectate.Beatmap
             switch (y)
             {
                 case 0:
-                    return new OsuStandardHitCircle(split, comboIndex, comboNumber, b);
+                    return new OsuStandardHitCircle(split, comboIndex, comboNumber, b, i);
                 case 1:
-                    return new OsuStandardSlider(split, comboIndex, comboNumber, b);
+                    return new OsuStandardSlider(split, comboIndex, comboNumber, b, i);
                 case 2:
-                    return new OsuStandardSpinner(split, comboIndex, comboNumber, b);
+                    return new OsuStandardSpinner(split, comboIndex, comboNumber, b, i);
                 default:
                     Console.WriteLine("invalid hitobject encountered; skipping.");
                     return null;
@@ -52,8 +53,10 @@ namespace OsuSpectate.Beatmap
         public int[] addition;
         public int comboNumber;
         public int comboIndex;
-        public OsuStandardHitCircle(string[] s, int comboI, int comboN, OsuStandardBeatmap b)
+        private int id;
+        public OsuStandardHitCircle(string[] s, int comboI, int comboN, OsuStandardBeatmap b, int i)
         {
+            id = i;
             comboNumber = comboN;
             comboIndex = comboI;
             beatmap = b;
@@ -67,6 +70,7 @@ namespace OsuSpectate.Beatmap
         public override TimeSpan getStart() { return time; }
         public override TimeSpan getEnd() { return time; }
         public override OsuStandardBeatmap getBeatmap() { return beatmap; }
+        public override int getId() { return id; }
         public override OsuStandardHitObject flipY()
         {
             OsuStandardHitCircle result = (OsuStandardHitCircle)this.MemberwiseClone();
@@ -99,8 +103,12 @@ namespace OsuSpectate.Beatmap
 
         public int comboNumber;
         public int comboIndex;
-        public OsuStandardSlider(string[] tokens, int comboI, int comboN, OsuStandardBeatmap b)
+
+        private int id;
+        public OsuStandardSlider(string[] tokens, int comboI, int comboN, OsuStandardBeatmap b, int i)
         {
+            id = i;
+
             beatmap = b;
             comboNumber = comboN;
             comboIndex = comboI;
@@ -127,7 +135,7 @@ namespace OsuSpectate.Beatmap
             yList[0] = y;
             points[0] = new PointF(x, y);
             this.repeat = int.Parse(tokens[6]);
-            this.pixelLength = float.Parse(tokens[7])*repeat;
+            this.pixelLength = float.Parse(tokens[7]);
             if (tokens.Length > 8)
             {
                 String[] edgeHitSoundTokens = tokens[8].Split(new char[2] { '\\', '|' });
@@ -151,13 +159,14 @@ namespace OsuSpectate.Beatmap
         }
         public void updateTiming()
         {
-            endTime = startTime.Add(beatmap.GetSliderDuration(startTime, pixelLength));
+            endTime = startTime.Add(beatmap.GetSliderDuration(startTime, this));
             
         }
         public override string getType() { return "slider"; }
         public override TimeSpan getStart() { return startTime; }
         public override TimeSpan getEnd() { return endTime; }
         public override OsuStandardBeatmap getBeatmap() { return beatmap; }
+        public override int getId() { return id; }
         public override OsuStandardHitObject flipY()
         {
             OsuStandardSlider result = (OsuStandardSlider)this.MemberwiseClone();
@@ -183,8 +192,11 @@ namespace OsuSpectate.Beatmap
         public int[] addition;
         public int comboNumber;
         public int comboIndex;
-        public OsuStandardSpinner(string[] s, int comboI, int comboN, OsuStandardBeatmap b)
+        private int id;
+
+        public OsuStandardSpinner(string[] s, int comboI, int comboN, OsuStandardBeatmap b, int i)
         {
+            id = i;
             comboNumber = comboN;
             comboIndex = comboI;
 
@@ -196,6 +208,7 @@ namespace OsuSpectate.Beatmap
         public override TimeSpan getStart() { return startTime; }
         public override TimeSpan getEnd() { return endTime; }
         public override OsuStandardBeatmap getBeatmap() { return beatmap; }
+        public override int getId() { return id; }
         public override OsuStandardHitObject flipY()
         {
             return this;

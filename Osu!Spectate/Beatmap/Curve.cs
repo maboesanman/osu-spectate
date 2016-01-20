@@ -12,6 +12,10 @@ namespace OsuSpectate.Beatmap
     abstract public class Curve
     {
         public PointF[] controlPoints;
+        public float minX;
+        public float minY;
+        public float maxX;
+        public float maxY;
         float[] approximateIndices;
         PointF[] approximatePoints;
         float actualEndParameter;
@@ -19,9 +23,9 @@ namespace OsuSpectate.Beatmap
         abstract public PointF rawPointOnCurve(float time);
         public PointF pointOnCurve(float time)//adjusted for speed, time is between 0 and 1, where 0 is the start and 1 is the correct length away
         {
-            time = time * getLength();
-            time = time % (2.0f * getLength() / repeatCount);
-            time = getLength() / repeatCount - Math.Abs(time - getLength() / repeatCount);
+            time = time * getLength()*repeatCount;
+            time = time % (2.0f * getLength());
+            time = getLength() - Math.Abs(time - getLength());
             float currentLength = 0.0f;
             PointF p1;
             PointF p2;
@@ -77,6 +81,10 @@ namespace OsuSpectate.Beatmap
         }
         public void ComputePoints()
         {
+            minX = float.MaxValue;
+            minY = float.MaxValue;
+            maxX = float.MinValue;
+            maxY = float.MinValue;
             List<float> indices = new List<float>(0);
             float currentLength = 0.0f;
             float currentIndex = 0.0f;
@@ -96,7 +104,10 @@ namespace OsuSpectate.Beatmap
                 currentLength += Computation.Distance(p1, p2);
                 currentIndex += indexDifference;
                 p1 = rawPointOnCurve(currentIndex);
+
                 indices.Add(currentIndex);
+
+                
                 //Console.WriteLine("found a point "+indexDifference+" "+currentIndex+" "+currentLength);
             }
             float i1 = currentIndex - indexDifference;
@@ -105,12 +116,15 @@ namespace OsuSpectate.Beatmap
             float d2 = currentLength;
             float d3 = getLength();
             indices.Add((d3 - d1) / (d2 - d1) * (i2 - i1) + i1);
-
             approximateIndices = indices.ToArray();
             approximatePoints = new PointF[indices.Count];
             for (int i=0;i<approximatePoints.Length;i++)
             {
                 approximatePoints[i] = rawPointOnCurve(indices.ElementAt(i));
+                minX = Math.Min(minX, approximatePoints[i].X);
+                minY = Math.Min(minY, approximatePoints[i].Y);
+                maxX = Math.Max(maxX, approximatePoints[i].X);
+                maxY = Math.Max(maxY, approximatePoints[i].Y);
             }
 
         }

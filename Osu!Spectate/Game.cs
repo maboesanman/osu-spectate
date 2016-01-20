@@ -43,9 +43,9 @@ namespace OsuSpectate
 
             OsuSkin Skin = new OsuSkin(@"C:\Program Files (x86)\osu!\Skins\Aesthetic\", true);
             //OsuSkin Skin = new OsuSkin(@"\\", true);
-            Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\292301 xi - Blue Zenith\xi - Blue Zenith (Asphyxia) [FOUR DIMENSIONS].osu");
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - xi - Blue Zenith [FOUR DIMENSIONS] (2016-01-02) Osu.osr", Beatmap, true));
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\cptnXn - xi - Blue Zenith [FOUR DIMENSIONS] (2015-12-18) Osu.osr", Beatmap, true));
+            Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\other\39804 xi - FREEDOM DiVE\xi - FREEDOM DiVE (Nakagawa-Kanon) [FOUR DIMENSIONS].osu");
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\-GN - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2015-12-20) Osu.osr", Beatmap, true));
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2016-01-18) Osu.osr", Beatmap, true));
 
             //     Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\203309 Ni-Sokkususu - Shukusai no Elementalia\Ni-Sokkususu - Shukusai no Elementalia (Silynn) [Kneesocks].osu");
             //     GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\_index - Ni-Sokkususu - Shukusai no Elementalia [Kneesocks] (2015-04-03) Osu.osr", Beatmap, true));

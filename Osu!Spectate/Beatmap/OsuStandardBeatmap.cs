@@ -9,8 +9,8 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing;
 using System.Drawing.Imaging;
-
-
+using System.Drawing.Drawing2D;
+using System.Diagnostics;
 
 namespace OsuSpectate.Beatmap
 {
@@ -68,6 +68,9 @@ namespace OsuSpectate.Beatmap
         Color[] ComboColors;        //Combo# (Integer List) is a list of three numbers, each from 0 - 255 defining an RGB color.
         //HIT OBJECTS
         private List<OsuStandardHitObject> HitObjectList;
+        Dictionary<int, int?> sliderTexturesNomod;
+        Dictionary<int, int?> sliderTexturesHardrock;
+        Dictionary<int, int?> sliderTexturesEasy;
 
 
         public OsuStandardBeatmap(string path)
@@ -350,7 +353,7 @@ namespace OsuSpectate.Beatmap
                                                 currentComboIndex++;
                                                 currentComboNumber = 1;
                                             }
-                                            HitObjectList.Add(OsuStandardHitObject.getNewHitobject(split, currentComboIndex, currentComboNumber, this));
+                                            HitObjectList.Add(OsuStandardHitObject.getNewHitobject(split, currentComboIndex, currentComboNumber, this, HitObjectList.Count));
                                             currentComboNumber++;
                                         }
                                     }
@@ -388,14 +391,98 @@ namespace OsuSpectate.Beatmap
             HitObjectList.RemoveAll(item => item == null);
             TimingPointList.Sort();
             NonInheritedTimingPointList.Sort();
+            sliderTexturesNomod = new Dictionary<int, int?>(0);
+            sliderTexturesHardrock = new Dictionary<int, int?>(0);
+            sliderTexturesEasy = new Dictionary<int, int?>(0);
             for(int i = 0; i < HitObjectList.Count; i++)
             {
                 if(HitObjectList.ElementAt(i).getType()=="slider")
                 {
                     ((OsuStandardSlider)HitObjectList.ElementAt(i)).updateTiming();
+                    sliderTexturesNomod.Add(HitObjectList.ElementAt(i).getId(), null);
+                    sliderTexturesHardrock.Add(HitObjectList.ElementAt(i).getId(), null);
+                    sliderTexturesEasy.Add(HitObjectList.ElementAt(i).getId(), null);
                 }
             }
             Console.WriteLine("finished loading beatmap: " + Title);
+        }
+        public int GetSliderTexture(OsuStandardSlider slider, ReplayAPI.Mods mods)
+        {
+            if ((mods & ReplayAPI.Mods.HardRock) == ReplayAPI.Mods.HardRock) 
+            {
+                if (!sliderTexturesHardrock[slider.getId()].HasValue)
+                {
+                    sliderTexturesHardrock[slider.getId()] = GenerateSliderTexture(slider, mods);
+                }
+                return sliderTexturesHardrock[slider.getId()].Value;
+            }
+            if ((mods & ReplayAPI.Mods.Easy) == ReplayAPI.Mods.Easy)
+            {
+                if (!sliderTexturesEasy[slider.getId()].HasValue)
+                {
+                    sliderTexturesEasy[slider.getId()] = GenerateSliderTexture(slider, mods);
+                }
+                return sliderTexturesEasy[slider.getId()].Value;
+            }
+            if (!sliderTexturesNomod[slider.getId()].HasValue)
+            {
+                sliderTexturesNomod[slider.getId()] = GenerateSliderTexture(slider, mods);
+            }
+            return sliderTexturesNomod[slider.getId()].Value;
+        }
+        public int GenerateSliderTexture(OsuStandardSlider slider, ReplayAPI.Mods mods)
+        {
+            
+            float scale = 1.5f;
+            Bitmap SliderBMP = new Bitmap((int)(((slider.curve.maxX-slider.curve.minX)+2.0f*GetCSRadius(mods)) * scale), (int)(((slider.curve.maxY - slider.curve.minY) + 2.0f * GetCSRadius(mods)) * scale));
+            Graphics SliderGFX = Graphics.FromImage(SliderBMP);
+            SliderGFX.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            SliderGFX.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            SliderGFX.Clear(Color.Transparent);
+            float cs = GetCSRadius(mods);
+
+            Pen backPen = new Pen(Color.White, cs * 1.8f * scale);
+            backPen.LineJoin = LineJoin.Round;
+            backPen.EndCap = LineCap.Round;
+            backPen.StartCap = LineCap.Round;
+
+            Pen frontPen = new Pen(Color.Black, cs * 1.6f * scale);
+            frontPen.LineJoin = LineJoin.Round;
+            frontPen.EndCap = LineCap.Round;
+            frontPen.StartCap = LineCap.Round;
+
+            GraphicsPath path = new GraphicsPath();
+
+            
+            path.AddLines(slider.curve.getPoints());
+            Matrix m = new Matrix();
+            m.Scale(scale, scale);
+            m.Translate(-(slider.curve.minX - GetCSRadius(mods)), -(slider.curve.minY - GetCSRadius(mods)));
+            path.Transform(m);
+            SliderGFX.DrawPath(backPen, path);
+            SliderGFX.DrawPath(frontPen, path);
+            SliderBMP.MakeTransparent(Color.Black);
+            BitmapData Data = SliderBMP.LockBits(new Rectangle(0, 0, SliderBMP.Width, SliderBMP.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            SliderBMP.UnlockBits(Data);
+            SliderGFX.ReleaseHdc(SliderGFX.GetHdc());
+            SliderGFX.Flush();
+            SliderGFX.Dispose();
+            
+            int ID = GL.GenTexture();
+
+            GL.BindTexture(TextureTarget.Texture2D, ID);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Data.Width, Data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, Data.Scan0);
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            
+
+
+            SliderBMP.Dispose();
+            
+            return ID;
         }
         public TimeSpan GetOD300Milliseconds(ReplayAPI.Mods mods)
         {
@@ -411,17 +498,25 @@ namespace OsuSpectate.Beatmap
         }
         public TimeSpan GetARMilliseconds(ReplayAPI.Mods mods)
         {
-            if ((((int)mods) / 16) % 2 == 1)
+            if ((mods & ReplayAPI.Mods.HardRock) == ReplayAPI.Mods.HardRock)
             {
                 return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * ((1800.0f - (Math.Min(ApproachRate * 1.4f, 10.0f)) * 120.0f) - (Math.Max((Math.Min(ApproachRate * 1.4f, 10.0f) - 5.0f) * 30.0f, 0.0f)))));
+            }
+            if ((mods & ReplayAPI.Mods.Easy) == ReplayAPI.Mods.Easy)
+            {
+                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * ((1800.0f - (Math.Min(ApproachRate * 0.5f, 10.0f)) * 120.0f) - (Math.Max((ApproachRate*0.5f - 5.0f) * 30.0f, 0.0f)))));
             }
             return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * ((1800.0f - (ApproachRate) * 120.0f) - (Math.Max((ApproachRate - 5.0f) * 30.0f, 0.0f)))));
         }
         public float GetCSRadius(ReplayAPI.Mods mods)
         {
-            if ((((int)mods) / 16) % 2 == 1)
+            if ((mods & ReplayAPI.Mods.HardRock) == ReplayAPI.Mods.HardRock)
             {
                 return 4.0f * (12.0f - Math.Min(CircleSize * 1.3f, 10.0f));
+            }
+            if ((mods & ReplayAPI.Mods.Easy) == ReplayAPI.Mods.Easy)
+            {
+                return 4.0f * (12.0f - CircleSize*0.5f);
             }
             return 4.0f * (12.0f - CircleSize);
         }
@@ -439,8 +534,9 @@ namespace OsuSpectate.Beatmap
                 return HitObjectList.ElementAt(i);
             }
         }
-        public TimeSpan GetSliderDuration(TimeSpan time, float length)
+        public TimeSpan GetSliderDuration(TimeSpan time, OsuStandardSlider slider)
         {
+            
             int index1=0;
             while(TimingPointList.ElementAt(index1).Offset.CompareTo(time)<=0)
             {
@@ -459,10 +555,10 @@ namespace OsuSpectate.Beatmap
             TimingPoint parent = NonInheritedTimingPointList.ElementAt(index2-1);
             if(!inherited.Inherited)
             {
-                return TimeSpan.FromMilliseconds(length / 100.0f * parent.BeatLength.TotalMilliseconds / SliderMultiplier);
+                return TimeSpan.FromMilliseconds(slider.pixelLength * slider.repeat / 100.0f * parent.BeatLength.TotalMilliseconds / SliderMultiplier);
             } else
             {
-                return TimeSpan.FromMilliseconds(length / 100.0f * parent.BeatLength.TotalMilliseconds / SliderMultiplier* (-0.01f * inherited.BeatLength.TotalMilliseconds));
+                return TimeSpan.FromMilliseconds(slider.pixelLength * slider.repeat / 100.0f * parent.BeatLength.TotalMilliseconds / SliderMultiplier* (-0.01f * inherited.BeatLength.TotalMilliseconds));
             }
         }
         

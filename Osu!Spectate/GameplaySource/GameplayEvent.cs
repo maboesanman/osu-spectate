@@ -211,12 +211,28 @@ namespace OsuSpectate.GameplaySource
             Parent.Remove(this);
         }
     }
+    class RenderSliderDrawEvent : GameplayEvent
+    {
+        RenderSlider rs;
+        List<GameplayEvent> Parent;
+        public RenderSliderDrawEvent(TimeSpan time, List<GameplayEvent> parent, RenderSlider slider) : base(time)
+        {
+            Parent = parent;
+            rs = slider;
+        }
+        public override void handle()
+        {
+            rs.computeTexture();
+            Parent.Remove(this);
+        }
+    }
     class RenderSliderBeginEvent : GameplayEvent
     {
         List<GameplayEvent> Parent;
         List<RenderObject> RenderList;
         OsuStandardSlider Slider;
         RenderSlider Render;
+        
         public RenderSliderBeginEvent(OsuStandardSlider slider, List<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardGameplayInput replay)
             : base(slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(replay.GetMods())))
         {
@@ -225,6 +241,7 @@ namespace OsuSpectate.GameplaySource
             Render = new RenderSlider(slider, replay);
             RenderList = renderList;
             Parent.Add(this);
+            parent.Add(new RenderSliderDrawEvent((slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(replay.GetMods()))).Subtract(TimeSpan.FromMilliseconds(slider.pixelLength*10.0f)),Parent, Render));
 
         }
         public override void handle()

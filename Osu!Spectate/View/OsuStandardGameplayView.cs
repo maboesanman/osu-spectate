@@ -80,10 +80,7 @@ namespace OsuSpectate.View
             ReplayFrame frame = GameplayInput.GetReplayFrame(time);
             float CursorX = Computation.XComputation(frame.X, OriginX, OriginY, width, height, windowWidth, windowHeight);
             float CursorY = Computation.YComputation(frame.Y, OriginX, OriginY, width, height, windowWidth, windowHeight);
-            if ((GameplayInput.GetMods() & Mods.HardRock) == Mods.HardRock)
-            {
-                
-            }
+            
             float CursorWidth = Math.Abs(Computation.XComputation(20.0f, OriginX, OriginY, width, height, windowWidth, windowHeight) - Computation.XComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
             float CursorHeight = Math.Abs(Computation.YComputation(20.0f, OriginX, OriginY, width, height, windowWidth, windowHeight) - Computation.YComputation(0.0f, OriginX, OriginY, width, height, windowWidth, windowHeight));
 
@@ -181,6 +178,39 @@ namespace OsuSpectate.View
                         float green = (Skin.getComboColors()[s.comboIndex % Skin.getComboColors().Length].G * 1.0f) / (255.0f);
                         float blue = (Skin.getComboColors()[s.comboIndex % Skin.getComboColors().Length].B * 1.0f) / (255.0f);
                         PointF p;
+                        if ((GameplayInput.GetMods() & Mods.HardRock) == Mods.HardRock)
+                        {
+                            GL.BindTexture(TextureTarget.Texture2D, rs.SliderBorderTexture.Value);
+                            GL.Color4(1.0f, 1.0f, 1.0f, opacity);
+                            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, 100.0f);
+                            GL.Begin(PrimitiveType.Quads);
+                            GL.TexCoord2(0, 1);
+                            GL.Vertex2(Computation.XComputation(s.curve.minX - Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.curve.minY - Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(1, 1);
+                            GL.Vertex2(Computation.XComputation(s.curve.maxX + Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.curve.minY - Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(1, 0);
+                            GL.Vertex2(Computation.XComputation(s.curve.maxX + Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.curve.maxY + Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(0, 0);
+                            GL.Vertex2(Computation.XComputation(s.curve.minX - Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.curve.maxY + Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.End();
+                        }
+                        else
+                        {
+                            GL.BindTexture(TextureTarget.Texture2D, rs.SliderBorderTexture.Value);
+                            GL.Color4(1.0f, 1.0f, 1.0f, opacity);
+                            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, 100.0f);
+                            GL.Begin(PrimitiveType.Quads);
+                            GL.TexCoord2(0, 0);
+                            GL.Vertex2(Computation.XComputation(s.curve.minX - Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.curve.minY - Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(1, 0);
+                            GL.Vertex2(Computation.XComputation(s.curve.maxX + Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.curve.minY - Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(1, 1);
+                            GL.Vertex2(Computation.XComputation(s.curve.maxX + Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.curve.maxY + Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.TexCoord2(0, 1);
+                            GL.Vertex2(Computation.XComputation(s.curve.minX - Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(s.curve.maxY + Beatmap.GetCSRadius(GameplayInput.GetMods()), OriginX, OriginY, width, height, windowWidth, windowHeight));
+                            GL.End();
+                        }
+
                         if (s.getStart() > time)
                         {
                             
@@ -201,19 +231,7 @@ namespace OsuSpectate.View
 
                         
 
-                        GL.BindTexture(TextureTarget.Texture2D, rs.SliderBorderTexture);
-                        GL.Color4(1.0f, 1.0f, 1.0f, opacity);
-                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, 100.0f);
-                        GL.Begin(PrimitiveType.Quads);
-                        GL.TexCoord2(0, 0);
-                        GL.Vertex2(Computation.XComputation(0, OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(0, OriginX, OriginY, width, height, windowWidth, windowHeight));
-                        GL.TexCoord2(1, 0);
-                        GL.Vertex2(Computation.XComputation(512, OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(0, OriginX, OriginY, width, height, windowWidth, windowHeight));
-                        GL.TexCoord2(1, 1);
-                        GL.Vertex2(Computation.XComputation(512, OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(384, OriginX, OriginY, width, height, windowWidth, windowHeight));
-                        GL.TexCoord2(0, 1);
-                        GL.Vertex2(Computation.XComputation(0, OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(384, OriginX, OriginY, width, height, windowWidth, windowHeight));
-                        GL.End();
+                        
 
                         p = s.curve.pointOnCurve(1.0f/s.repeat);
                         GL.BindTexture(TextureTarget.Texture2D, Skin.GetHitCircle());

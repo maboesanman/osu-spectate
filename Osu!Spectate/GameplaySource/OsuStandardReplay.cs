@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel;
 
 using ReplayAPI;
 
@@ -14,6 +15,7 @@ namespace OsuSpectate.GameplaySource
     {
         
         public OsuStandardBeatmap Beatmap;
+        private BackgroundWorker sliderRenderer;
 
         private SortedDictionary<TimeSpan, int> ReplayFrameIndex;
         private List<TimeSpan> ReplayFrameIndexKeys;
@@ -54,7 +56,8 @@ namespace OsuSpectate.GameplaySource
             EventList = new List<GameplayEvent>();
             RenderList = new List<RenderObject>();
             CurrentTime = TimeSpan.Zero;
-            
+            sliderRenderer = new BackgroundWorker();
+            sliderRenderer.DoWork += RenderSlider;
             for (int i = 0; i < Beatmap.GetHitObjectCount(); i++)
             {
                 OsuStandardHitObject ho = Beatmap.GetHitObject(i, Mods);
@@ -69,6 +72,15 @@ namespace OsuSpectate.GameplaySource
 
                 }
             }
+            for (int i = 0; i < (Beatmap).GetHitObjectCount(); i++)
+            {
+                OsuStandardHitObject ho = (Beatmap).GetHitObject(i, Mods);
+                if (ho.getType() == "slider")
+                {
+                    Beatmap.GetSliderTexture((OsuStandardSlider)ho, GetMods());
+                }
+            }
+            //sliderRenderer.RunWorkerAsync(Beatmap);
         }
         public string GetPlayerName()
         {
@@ -134,31 +146,23 @@ namespace OsuSpectate.GameplaySource
 
         public TimeSpan GetOD300Milliseconds()
         {
-            return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (78.0f - Beatmap.GetOverallDifficulty() * 6.0f)));
+            return Beatmap.GetOD300Milliseconds(GetMods());
         }
         public TimeSpan GetOD100Milliseconds()
         {
-            return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (138.0f - Beatmap.GetOverallDifficulty() * 8.0f)));
+            return Beatmap.GetOD100Milliseconds(GetMods());
         }
         public TimeSpan GetOD50Milliseconds()
         {
-            return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (198.0f - Beatmap.GetOverallDifficulty() * 10.0f)));
+            return Beatmap.GetOD50Milliseconds(GetMods());
         }
         public TimeSpan GetARMilliseconds()
         {
-            if ((Mods & Mods.HardRock) == Mods.HardRock)
-            {
-                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * ((1800.0f - (Math.Min(Beatmap.GetApproachRate() * 1.4f, 10.0f)) * 120.0f) - (Math.Max((Math.Min(Beatmap.GetApproachRate() * 1.4f, 10.0f) - 5.0f) * 30.0f, 0.0f)))));
-            }
-            return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * ((1800.0f - (Beatmap.GetApproachRate()) * 120.0f) - (Math.Max((Beatmap.GetApproachRate() - 5.0f) * 30.0f, 0.0f)))));
+            return Beatmap.GetARMilliseconds(GetMods());
         }
         public float GetCSRadius()
         {
-            if ((Mods & Mods.HardRock) == Mods.HardRock)
-            {
-                return 4.0f * (12.0f - Math.Min(Beatmap.GetCircleSize() * 1.3f, 10.0f));
-            }
-            return 4.0f * (12.0f - Beatmap.GetCircleSize());
+            return Beatmap.GetCSRadius(GetMods());
         }
         public void HandleUntil(TimeSpan time)
         {
@@ -183,6 +187,17 @@ namespace OsuSpectate.GameplaySource
         public List<RenderObject> GetRenderList()
         {
             return RenderList;
+        }
+        public void RenderSlider(object sender, DoWorkEventArgs e)
+        {
+            for (int i = 0; i < ((OsuStandardBeatmap)e.Argument).GetHitObjectCount(); i++)
+            {
+                OsuStandardHitObject ho = ((OsuStandardBeatmap)e.Argument).GetHitObject(i, Mods);
+                if(ho.getType()=="slider")
+                {
+                    Beatmap.GetSliderTexture((OsuStandardSlider)ho, GetMods());
+                }
+            }
         }
     }
 }
