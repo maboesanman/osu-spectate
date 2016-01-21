@@ -18,7 +18,18 @@ namespace OsuSpectate.GameplaySource
         {
             time = t;
         }
-        public abstract void handle();
+        public void handle()
+        {
+            _handle();
+            setHandled();
+        }
+        public void kill()
+        {
+            _kill();
+            setHandled();
+        }
+        public abstract void _handle();
+        public abstract void _kill();
         public int CompareTo(GameplayEvent e)
         {
             if (time != e.getTime())
@@ -51,12 +62,12 @@ namespace OsuSpectate.GameplaySource
             duplicateIndex = i;
         }
     }
-    class ReplayClickEvent : GameplayEvent
+    public class ReplayReleaseEvent : GameplayEvent
     {
         Keys keys;
         float x;
         float y;
-        public ReplayClickEvent(ReplayFrame frame)
+        public ReplayReleaseEvent(ReplayFrame frame)
             : base(new TimeSpan(frame.Time*TimeSpan.TicksPerMillisecond))
         {
             keys = frame.Keys;
@@ -64,154 +75,242 @@ namespace OsuSpectate.GameplaySource
             y = frame.Y;
 
         }
-        public override void handle()
+        public override void _handle()
         {
 
         }
+
+        public override void _kill()
+        {
+            throw new NotImplementedException();
+        }
     }
-    class ReplayReleasedEvent : GameplayEvent
+    public class ReplayClickEvent : GameplayEvent
     {
-        public ReplayReleasedEvent(ReplayFrame frame)
+        List<GameplayEvent> Parent;
+        List<GameplayObject> GameplayList;
+        List<RenderObject> RenderList;
+        OsuStandardGameplayInput Replay;
+        ReplayFrame Frame;
+        public ReplayClickEvent(ReplayFrame frame, List<GameplayEvent> parent, List<GameplayObject> gameplayList, List<RenderObject> renderList, OsuStandardGameplayInput replay)
             : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
         {
-
+            Parent = parent;
+            RenderList = renderList;
+            GameplayList = gameplayList;
+            Replay = replay;
+            Frame = frame;
+            Parent.Add(this);
         }
-        public override void handle()
+        public override void _handle()
         {
-
+            GameplayList.Sort((x, y) => x.GetTime().CompareTo(y.GetTime()));
+            for (int i=0;i<GameplayList.Count;i++)
+            {
+                switch(GameplayList.ElementAt(i).GetType())
+                {
+                    case ("hitcircle"):
+                        OsuStandardHitCircle c = ((GameplayHitCircle)GameplayList.ElementAt(i)).circle;
+                        if ((Frame.X - c.x) * (Frame.X - c.x) + (Frame.Y - c.y) * (Frame.Y - c.y)<Replay.GetCSRadius()*Replay.GetCSRadius())
+                        {
+                            if(Math.Abs(Frame.Time- GameplayList.ElementAt(i).GetTime().TotalMilliseconds)<Replay.GetOD300Milliseconds().TotalMilliseconds)
+                            {
+                                //Console.WriteLine("300");
+                                new Render300(c,RenderList,Parent);
+                            }
+                            else if (Math.Abs(Frame.Time - GameplayList.ElementAt(i).GetTime().TotalMilliseconds) < Replay.GetOD100Milliseconds().TotalMilliseconds)
+                            {
+                                //Console.WriteLine("100");
+                                new Render100(c, RenderList, Parent);
+                            }
+                            else if (Math.Abs(Frame.Time - GameplayList.ElementAt(i).GetTime().TotalMilliseconds) < Replay.GetOD50Milliseconds().TotalMilliseconds)
+                            {
+                                //Console.WriteLine("50");
+                                new Render50(c, RenderList, Parent);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                            ((GameplayHitCircle)GameplayList.ElementAt(i)).endEvent.setHandled();
+                            ((GameplayHitCircle)GameplayList.ElementAt(i)).renderEndEvent.setHandled();
+                            ((GameplayHitCircle)GameplayList.ElementAt(i)).renderEndEvent.kill();
+                            ((GameplayHitCircle)GameplayList.ElementAt(i)).endEvent.kill();
+                            
+                            i = GameplayList.Count;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
         }
     }
-    class HitCircleBeginEvent : GameplayEvent
+    public class HitCircleBeginEvent : GameplayEvent
     {
-        public HitCircleBeginEvent(ReplayFrame frame)
-            : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
+        List<GameplayObject> GameplayList;
+        GameplayHitCircle GC;
+        public HitCircleBeginEvent(GameplayHitCircle gc, List<GameplayObject> gameplayList)
+            : base(gc.GetStartTime())
         {
-
+            GC = gc;
+            GameplayList = gameplayList;
         }
-        public override void handle()
+        public override void _handle()
         {
-
+            GameplayList.Add(GC);
+        }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
         }
     }
-    class HitCircleEndEvent : GameplayEvent
+    public class HitCircleEndEvent : GameplayEvent
     {
-        public HitCircleEndEvent(ReplayFrame frame)
-            : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
+        List<GameplayObject> GameplayList;
+        GameplayHitCircle GC;
+        public HitCircleEndEvent(GameplayHitCircle gc, List<GameplayObject> gameplayList)
+            : base(gc.GetEndTime())
         {
-
+            GC = gc;
+            GameplayList = gameplayList;
         }
-        public override void handle()
+        public override void _handle()
         {
-
+            GameplayList.Remove(GC);
+        }
+        public override void _kill()
+        {
+            GameplayList.Remove(GC);
         }
     }
-    class SliderBeginEvent : GameplayEvent
+    public class SliderBeginEvent : GameplayEvent
     {
         public SliderBeginEvent(ReplayFrame frame)
             : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
         {
 
         }
-        public override void handle()
+        public override void _handle()
         {
 
         }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
+        }
     }
-    class SliderTickEvent : GameplayEvent
+    public class SliderTickEvent : GameplayEvent
     {
         public SliderTickEvent(ReplayFrame frame)
             : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
         {
 
         }
-        public override void handle()
+        public override void _handle()
         {
 
         }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
+        }
     }
-    class SliderEndEvent : GameplayEvent
+    public class SliderEndEvent : GameplayEvent
     {
         public SliderEndEvent(ReplayFrame frame)
             : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
         {
 
         }
-        public override void handle()
+        public override void _handle()
         {
 
         }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
+        }
     }
-    class SpinnerBeginEvent : GameplayEvent
+    public class SpinnerBeginEvent : GameplayEvent
     {
         public SpinnerBeginEvent(ReplayFrame frame)
             : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
         {
 
         }
-        public override void handle()
+        public override void _handle()
         {
 
         }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
+        }
     }
-    class SpinnerEndEvent : GameplayEvent
+    public class SpinnerEndEvent : GameplayEvent
     {
         public SpinnerEndEvent(ReplayFrame frame)
             : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
         {
 
         }
-        public override void handle()
+        public override void _handle()
         {
 
         }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
+        }
     }
     //render events
-    class RenderHitCircleBeginEvent : GameplayEvent
+    public class RenderHitCircleBeginEvent : GameplayEvent
     {
-        List<GameplayEvent> Parent;
         List<RenderObject> RenderList;
         OsuStandardHitCircle Circle;
         RenderHitCircle Render;
-        public RenderHitCircleBeginEvent(OsuStandardHitCircle circle, List<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardGameplayInput replay)
-            : base(circle.getStart().Subtract(circle.getBeatmap().GetARMilliseconds(replay.GetMods())))
+        OsuStandardGameplayInput GameplayInput;
+        public RenderHitCircleBeginEvent(RenderHitCircle rc, List<RenderObject> renderList)
+            : base(rc.GetStartTime())
         {
-            Parent = parent;
-            Circle = circle;
-            Render = new RenderHitCircle(circle, replay);
+            Render = rc;
             RenderList = renderList;
-            Parent.Add(this);
         }
-        public override void handle()
+        public override void _handle()
         {
-            
             RenderList.Add(Render);
-            Parent.Remove(this);
-            new RenderHitCircleEndEvent(Circle, Render, Parent,RenderList);
+        }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
         }
     }
-    class RenderHitCircleEndEvent : GameplayEvent
+    public class RenderHitCircleEndEvent : GameplayEvent
     {
         List<GameplayEvent> Parent;
         List<RenderObject> RenderList;
         RenderHitCircle Render;
-        public RenderHitCircleEndEvent(OsuStandardHitCircle circle, RenderHitCircle render, List<GameplayEvent> parent, List<RenderObject> renderList)
-            : base(circle.getEnd())
+        public RenderHitCircleEndEvent(RenderHitCircle rc, List<RenderObject> renderList)
+            : base(rc.GetEndTime())
         {
-            //put this after circle.getEnd()
-            //.Add(circle.getBeatmap().GetOD50Milliseconds(render.GameplayInput.GetMods())) 
-            Parent = parent;
             RenderList = renderList;
-            Render = render;
-            
-            Parent.Add(this);
+            Render = rc;
         }
-        public override void handle()
+        public override void _handle()
         {
             RenderList.Remove(Render);
-            Parent.Remove(this);
+        }
+        public override void _kill()
+        {
+            RenderList.Remove(Render);
         }
     }
-    class RenderSliderDrawEvent : GameplayEvent
+    public class RenderSliderDrawEvent : GameplayEvent
     {
         RenderSlider rs;
         List<GameplayEvent> Parent;
@@ -220,13 +319,16 @@ namespace OsuSpectate.GameplaySource
             Parent = parent;
             rs = slider;
         }
-        public override void handle()
+        public override void _handle()
         {
             rs.computeTexture();
-            Parent.Remove(this);
+        }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
         }
     }
-    class RenderSliderBeginEvent : GameplayEvent
+    public class RenderSliderBeginEvent : GameplayEvent
     {
         List<GameplayEvent> Parent;
         List<RenderObject> RenderList;
@@ -244,14 +346,18 @@ namespace OsuSpectate.GameplaySource
             parent.Add(new RenderSliderDrawEvent((slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(replay.GetMods()))).Subtract(TimeSpan.FromMilliseconds(slider.pixelLength*10.0f)),Parent, Render));
 
         }
-        public override void handle()
+        public override void _handle()
         {
             RenderList.Add(Render);
-            Parent.Remove(this);
+           
             Parent.Add(new RenderSliderEndEvent(Slider, Render, Parent, RenderList));
         }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
+        }
     }
-    class RenderSliderEndEvent : GameplayEvent
+    public class RenderSliderEndEvent : GameplayEvent
     {
         List<GameplayEvent> Parent;
         List<RenderObject> RenderList;
@@ -263,10 +369,157 @@ namespace OsuSpectate.GameplaySource
             RenderList = renderList;
             Render = render;
         }
-        public override void handle()
+        public override void _handle()
         {
             RenderList.Remove(Render);
-            Parent.Remove(this);
+        }
+        public override void _kill()
+        {
+            RenderList.Remove(Render);
+        }
+    }
+    public class Render300BeginEvent : GameplayEvent
+    {
+        List<RenderObject> RenderList;
+        Render300 Render;
+        OsuStandardGameplayInput GameplayInput;
+        public Render300BeginEvent(Render300 r300, List<RenderObject> renderList)
+            : base(r300.GetStartTime())
+        {
+            Render = r300;
+            RenderList = renderList;
+        }
+        public override void _handle()
+        {
+            RenderList.Add(Render);
+        }
+        public override void _kill() { }
+    }
+    public class Render300EndEvent : GameplayEvent
+    {
+        List<RenderObject> RenderList;
+        Render300 Render;
+        public Render300EndEvent(Render300 r300, List<RenderObject> renderList)
+            : base(r300.GetStartTime().Add(TimeSpan.FromMilliseconds(300)))
+        {
+            Render = r300;
+            RenderList = renderList;
+        }
+        public override void _handle()
+        {
+            RenderList.Remove(Render);
+        }
+        public override void _kill()
+        {
+            RenderList.Remove(Render);
+        }
+    }
+    public class Render100BeginEvent : GameplayEvent
+    {
+        List<RenderObject> RenderList;
+        Render100 Render;
+        OsuStandardGameplayInput GameplayInput;
+        public Render100BeginEvent(Render100 r100, List<RenderObject> renderList)
+            : base(r100.GetStartTime())
+        {
+            Render = r100;
+            RenderList = renderList;
+        }
+        public override void _handle()
+        {
+            RenderList.Add(Render);
+        }
+        public override void _kill() { }
+    }
+    public class Render100EndEvent : GameplayEvent
+    {
+        List<RenderObject> RenderList;
+        Render100 Render;
+        public Render100EndEvent(Render100 r100, List<RenderObject> renderList)
+            : base(r100.GetStartTime().Add(TimeSpan.FromMilliseconds(300)))
+        {
+            Render = r100;
+            RenderList = renderList;
+        }
+        public override void _handle()
+        {
+            RenderList.Remove(Render);
+        }
+        public override void _kill()
+        {
+            RenderList.Remove(Render);
+        }
+    }
+    public class Render50BeginEvent : GameplayEvent
+    {
+        List<RenderObject> RenderList;
+        Render50 Render;
+        OsuStandardGameplayInput GameplayInput;
+        public Render50BeginEvent(Render50 r50, List<RenderObject> renderList)
+            : base(r50.GetStartTime())
+        {
+            Render = r50;
+            RenderList = renderList;
+        }
+        public override void _handle()
+        {
+            RenderList.Add(Render);
+        }
+        public override void _kill() { }
+    }
+    public class Render50EndEvent : GameplayEvent
+    {
+        List<RenderObject> RenderList;
+        Render50 Render;
+        public Render50EndEvent(Render50 r50, List<RenderObject> renderList)
+            : base(r50.GetStartTime().Add(TimeSpan.FromMilliseconds(300)))
+        {
+            Render = r50;
+            RenderList = renderList;
+        }
+        public override void _handle()
+        {
+            RenderList.Remove(Render);
+        }
+        public override void _kill()
+        {
+            RenderList.Remove(Render);
+        }
+    }
+    public class RenderMissBeginEvent : GameplayEvent
+    {
+        List<RenderObject> RenderList;
+        RenderMiss Render;
+        OsuStandardGameplayInput GameplayInput;
+        public RenderMissBeginEvent(RenderMiss rMiss, List<RenderObject> renderList)
+            : base(rMiss.GetStartTime())
+        {
+            Render = rMiss;
+            RenderList = renderList;
+        }
+        public override void _handle()
+        {
+            RenderList.Add(Render);
+        }
+        public override void _kill() { }
+    }
+    public class RenderMissEndEvent : GameplayEvent
+    {
+        List<RenderObject> RenderList;
+        RenderMiss Render;
+        public RenderMissEndEvent(RenderMiss rMiss, List<RenderObject> renderList)
+            : base(rMiss.GetStartTime().Add(TimeSpan.FromMilliseconds(300)))
+        {
+            Render = rMiss;
+            RenderList = renderList;
+        }
+        public override void _handle()
+        {
+            RenderList.Remove(Render);
+        }
+        public override void _kill()
+        {
+            RenderList.Remove(Render);
         }
     }
 }

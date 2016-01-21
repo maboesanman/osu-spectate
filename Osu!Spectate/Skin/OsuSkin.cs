@@ -175,6 +175,10 @@ namespace OsuSpectate.Skin
             reverseArrow = loadSkinElement(LoadCount, "reversearrow", "png");
             inputOverlayKey = loadSkinElement(LoadCount, "inputoverlay-key", "png");
             inputOverlayBackground = loadSkinElement(LoadCount, "inputoverlay-background", "png");
+            hit0 = new int[1]; hit0[0] = loadSkinElement(LoadCount, "hit0", "png");
+            hit50 = new int[1]; hit50[0] = loadSkinElement(LoadCount, "hit50", "png");
+            hit100 = new int[1]; hit100[0] = loadSkinElement(LoadCount, "hit100", "png");
+            hit300 = new int[1]; hit300[0] = loadSkinElement(LoadCount, "hit300", "png");
             comboColors = new Color[6];
             comboColors[0] = Color.FromArgb(145, 229, 103);
             comboColors[1] = Color.FromArgb(255, 213, 128);

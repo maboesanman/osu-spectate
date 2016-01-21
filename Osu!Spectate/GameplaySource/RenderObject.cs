@@ -26,9 +26,9 @@ namespace OsuSpectate.GameplaySource
         public OsuStandardHitCircle HitCircle;
         public OsuStandardGameplayInput GameplayInput;
         private bool Initialized;
-        public RenderHitCircle(OsuStandardHitCircle h, OsuStandardGameplayInput r)
+        public RenderHitCircle(OsuStandardHitCircle c, OsuStandardGameplayInput r)
         {
-            HitCircle = h;
+            HitCircle = c;
             GameplayInput = r;
         }
         public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
@@ -38,6 +38,14 @@ namespace OsuSpectate.GameplaySource
         public string GetType()
         {
             return "HitCircle";
+        }
+        public TimeSpan GetStartTime()
+        {
+            return HitCircle.getStart().Subtract(GameplayInput.GetARMilliseconds());
+        }
+        public TimeSpan GetEndTime()
+        {
+            return HitCircle.getStart().Add(GameplayInput.GetOD50Milliseconds());
         }
     }
     public class RenderSlider : RenderObject
@@ -86,6 +94,130 @@ namespace OsuSpectate.GameplaySource
         public void kill()
         {
             GL.DeleteTexture(SliderBorderTexture);
+        }
+    }
+    public class Render300 : RenderObject
+    {
+        public TimeSpan time;
+        public float X;
+        public float Y;
+        private bool Initialized;
+        public Render300(OsuStandardHitCircle c, List<RenderObject> renderList, List<GameplayEvent> eventList)
+        {
+            time = c.time;
+            X = c.x;
+            Y = c.y;
+            eventList.Add(new Render300BeginEvent(this, renderList));
+            eventList.Add(new Render300EndEvent(this, renderList));
+        }
+        public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
+        {
+            Initialized = true;
+        }
+        public string GetType()
+        {
+            return "300";
+        }
+        public TimeSpan GetStartTime()
+        {
+            return time;
+        }
+        public TimeSpan GetEndTime()
+        {
+            return time.Add(TimeSpan.FromMilliseconds(500));
+        }
+    }
+    public class Render100 : RenderObject
+    {
+        public TimeSpan time;
+        public float X;
+        public float Y;
+        private bool Initialized;
+        public Render100(OsuStandardHitCircle c, List<RenderObject> renderList, List<GameplayEvent> eventList)
+        {
+            time = c.time;
+            X = c.x;
+            Y = c.y;
+            eventList.Add(new Render100BeginEvent(this, renderList));
+            eventList.Add(new Render100EndEvent(this, renderList));
+        }
+        public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
+        {
+            Initialized = true;
+        }
+        public string GetType()
+        {
+            return "100";
+        }
+        public TimeSpan GetStartTime()
+        {
+            return time;
+        }
+        public TimeSpan GetEndTime()
+        {
+            return time.Add(TimeSpan.FromMilliseconds(500));
+        }
+    }
+    public class Render50 : RenderObject
+    {
+        public TimeSpan time;
+        public float X;
+        public float Y;
+        private bool Initialized;
+        public Render50(OsuStandardHitCircle c, List<RenderObject> renderList, List<GameplayEvent> eventList)
+        {
+            time = c.time;
+            X = c.x;
+            Y = c.y;
+            eventList.Add(new Render50BeginEvent(this, renderList));
+            eventList.Add(new Render50EndEvent(this, renderList));
+        }
+        public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
+        {
+            Initialized = true;
+        }
+        public string GetType()
+        {
+            return "50";
+        }
+        public TimeSpan GetStartTime()
+        {
+            return time;
+        }
+        public TimeSpan GetEndTime()
+        {
+            return time.Add(TimeSpan.FromMilliseconds(500));
+        }
+    }
+    public class RenderMiss : RenderObject
+    {
+        public TimeSpan time;
+        public float X;
+        public float Y;
+        private bool Initialized;
+        public RenderMiss(OsuStandardHitCircle c, List<RenderObject> renderList, List<GameplayEvent> eventList)
+        {
+            time = c.time;
+            X = c.x;
+            Y = c.y;
+            eventList.Add(new RenderMissBeginEvent(this, renderList));
+            eventList.Add(new RenderMissEndEvent(this, renderList));
+        }
+        public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
+        {
+            Initialized = true;
+        }
+        public string GetType()
+        {
+            return "Miss";
+        }
+        public TimeSpan GetStartTime()
+        {
+            return time;
+        }
+        public TimeSpan GetEndTime()
+        {
+            return time.Add(TimeSpan.FromMilliseconds(500));
         }
     }
 }

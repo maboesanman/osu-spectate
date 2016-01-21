@@ -486,14 +486,38 @@ namespace OsuSpectate.Beatmap
         }
         public TimeSpan GetOD300Milliseconds(ReplayAPI.Mods mods)
         {
+            if ((mods & ReplayAPI.Mods.HardRock) == ReplayAPI.Mods.HardRock)
+            {
+                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (78.0f - Math.Max(OverallDifficulty * 1.4f, 10.0f) * 6.0f)));
+            }
+            if ((mods & ReplayAPI.Mods.Easy) == ReplayAPI.Mods.Easy)
+            {
+                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (78.0f - OverallDifficulty * 0.5f * 6.0f)));
+            }
             return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (78.0f - OverallDifficulty * 6.0f)));
         }
         public TimeSpan GetOD100Milliseconds(ReplayAPI.Mods mods)
         {
+            if ((mods & ReplayAPI.Mods.HardRock) == ReplayAPI.Mods.HardRock)
+            {
+                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (138.0f - Math.Max(OverallDifficulty * 1.4f, 10.0f) * 8.0f)));
+            }
+            if ((mods & ReplayAPI.Mods.Easy) == ReplayAPI.Mods.Easy)
+            {
+                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (138.0f - OverallDifficulty * 0.5f * 8.0f)));
+            }
             return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (138.0f - OverallDifficulty * 8.0f)));
         }
         public TimeSpan GetOD50Milliseconds(ReplayAPI.Mods mods)
         {
+            if ((mods & ReplayAPI.Mods.HardRock) == ReplayAPI.Mods.HardRock)
+            {
+                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (198.0f - Math.Max(OverallDifficulty*1.4f,10.0f) * 10.0f)));
+            }
+            if ((mods & ReplayAPI.Mods.Easy) == ReplayAPI.Mods.Easy)
+            {
+                return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (198.0f - OverallDifficulty*0.5f * 10.0f)));
+            }
             return new TimeSpan((long)(((float)TimeSpan.TicksPerMillisecond) * (198.0f - OverallDifficulty * 10.0f)));
         }
         public TimeSpan GetARMilliseconds(ReplayAPI.Mods mods)

@@ -33,6 +33,7 @@ namespace OsuSpectate.GameplaySource
         TimeSpan CurrentTime;
 
         List<RenderObject> RenderList;
+        List<GameplayObject> GameplayList;
 
         public OsuStandardReplay(string replayFile, OsuStandardBeatmap beatmap, bool fullLoad = false) : base(replayFile, fullLoad)
         {
@@ -40,7 +41,6 @@ namespace OsuSpectate.GameplaySource
             ReplayFrameIndex = new SortedDictionary<TimeSpan, int>();
             for (int i = 0; i < ReplayFrames.Count(); i++)
             {
-                
                 ReplayFrameIndex[new TimeSpan(ReplayFrames.ElementAt(i).Time*TimeSpan.TicksPerMillisecond)]= i;
             }
             ReplayFrameIndexKeys = ReplayFrameIndex.Keys.ToList();
@@ -55,6 +55,7 @@ namespace OsuSpectate.GameplaySource
 
             EventList = new List<GameplayEvent>();
             RenderList = new List<RenderObject>();
+            GameplayList = new List<GameplayObject>();
             CurrentTime = TimeSpan.Zero;
             sliderRenderer = new BackgroundWorker();
             sliderRenderer.DoWork += RenderSlider;
@@ -64,12 +65,54 @@ namespace OsuSpectate.GameplaySource
                 switch (ho.getType())
                 {
                     case ("hitcircle"):
-                        new RenderHitCircleBeginEvent((OsuStandardHitCircle)ho,EventList,RenderList,this);
+                        new GameplayHitCircle((OsuStandardHitCircle)ho, this, GameplayList, RenderList, EventList);
                         break;
                     case ("slider"):
                         new RenderSliderBeginEvent((OsuStandardSlider)ho, EventList, RenderList, this);
                         break;
 
+                }
+            }
+            for( int i=1; i<ReplayFrames.Count;i++)
+            {
+                if (ReplayFrames[i].Keys!= ReplayFrames[i-1].Keys)
+                {
+                    if (ReplayFrames[i].Keys == ReplayAPI.Keys.None)
+                    {
+                        new ReplayReleaseEvent(ReplayFrames[i]);
+                    }
+                    else
+                    {
+                        if ((ReplayFrames[i].Keys & ReplayAPI.Keys.K1) == ReplayAPI.Keys.K1)
+                        {
+                            if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.K1) != ReplayAPI.Keys.K1)
+                            {
+                                new ReplayClickEvent(ReplayFrames[i], EventList, GameplayList, RenderList, this);
+                            }
+                        }
+                        if ((ReplayFrames[i].Keys & ReplayAPI.Keys.K2) == ReplayAPI.Keys.K2)
+                        {
+                            if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.K2) != ReplayAPI.Keys.K2)
+                            {
+                                new ReplayClickEvent(ReplayFrames[i], EventList, GameplayList, RenderList, this);
+                            }
+                        }
+                        if ((ReplayFrames[i].Keys & ReplayAPI.Keys.M1) == ReplayAPI.Keys.M1)
+                        {
+                            if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.M1) != ReplayAPI.Keys.M1)
+                            {
+                                new ReplayClickEvent(ReplayFrames[i], EventList, GameplayList, RenderList, this);
+                            }
+                        }
+                        if ((ReplayFrames[i].Keys & ReplayAPI.Keys.M2) == ReplayAPI.Keys.M2)
+                        {
+                            if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.M2) != ReplayAPI.Keys.M2)
+                            {
+                                new ReplayClickEvent(ReplayFrames[i], EventList, GameplayList, RenderList, this);
+                            }
+                        }
+
+                    }
                 }
             }
             for (int i = 0; i < (Beatmap).GetHitObjectCount(); i++)
@@ -172,7 +215,11 @@ namespace OsuSpectate.GameplaySource
                 EventList.Sort();
                 if (EventList.First().getTime().CompareTo(time) < 0)
                 {
-                    EventList.First().handle();
+                    if(!EventList.First().isHandled())
+                    {
+                        EventList.First().handle();
+                    }
+                    EventList.Remove(EventList.First());
                 }
                 else
                 {

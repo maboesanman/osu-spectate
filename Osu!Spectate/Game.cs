@@ -25,7 +25,6 @@ namespace OsuSpectate
         AudioPlayer Audio;
         OsuStandardBeatmap Beatmap;
         Stopwatch timer = new Stopwatch();
-
         public Game(int w, int h)
             : base(w, h)
         {
@@ -44,17 +43,14 @@ namespace OsuSpectate
             OsuSkin Skin = new OsuSkin(@"C:\Program Files (x86)\osu!\Skins\Aesthetic\", true);
             //OsuSkin Skin = new OsuSkin(@"\\", true);
             Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\other\39804 xi - FREEDOM DiVE\xi - FREEDOM DiVE (Nakagawa-Kanon) [FOUR DIMENSIONS].osu");
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\-GN - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2015-12-20) Osu.osr", Beatmap, true));
             GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2016-01-18) Osu.osr", Beatmap, true));
 
-            //     Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\203309 Ni-Sokkususu - Shukusai no Elementalia\Ni-Sokkususu - Shukusai no Elementalia (Silynn) [Kneesocks].osu");
-            //     GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\_index - Ni-Sokkususu - Shukusai no Elementalia [Kneesocks] (2015-04-03) Osu.osr", Beatmap, true));
-
-            //    Beatmap.setMods(GameplayInputList[0].GetMods());
+            //Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\203309 Ni-Sokkususu - Shukusai no Elementalia\Ni-Sokkususu - Shukusai no Elementalia (Silynn) [Kneesocks].osu");
+            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\_index - Ni-Sokkususu - Shukusai no Elementalia [Kneesocks] (2015-04-03) Osu.osr", Beatmap, true));
+            
 
             MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new SongBackgroundView(Beatmap, 200, Color.Black, 0)));
-            MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 1.0f, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
-            MyArrangement.Views.Add(new ViewContainer(0.0f, -1.0f, 1.0f, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
+            MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
             Audio = new AudioPlayer(GameplayInputList[0]);
             timer.Start();
             timer.Elapsed.Add(Audio.getCurrentTime().Subtract(timer.Elapsed));
@@ -74,15 +70,18 @@ namespace OsuSpectate
 
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-            for(int i=0;i<GameplayInputList.Count;i++)
+            GL.ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            for (int i=0;i<GameplayInputList.Count;i++)
             {
                 GameplayInputList.ElementAt(i).HandleUntil(timer.Elapsed);
             }
             MyArrangement.Draw(timer.Elapsed,Width,Height);
 
             SwapBuffers();
-            System.GC.Collect();
-            System.GC.WaitForPendingFinalizers();
+            
+                //System.GC.Collect();
+                //System.GC.WaitForPendingFinalizers();
+            
         }
         protected override void OnResize(EventArgs e)
         {
