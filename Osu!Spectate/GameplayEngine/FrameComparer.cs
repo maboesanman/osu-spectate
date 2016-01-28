@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using ReplayAPI;
 
-namespace OsuSpectate.GameplaySource
+namespace OsuSpectate.GameplayEngine
 {
     public class ReplayFrameComparer : IComparer<ReplayFrame>
     {
@@ -22,9 +22,9 @@ namespace OsuSpectate.GameplaySource
             return Frame1.Time.CompareTo(Frame2.Time);
         }
     }
-    public class GameplayFrameComparer : IComparer<GameplayFrame>
+    public class GameplayFrameComparer : IComparer<OsuStandardGameplayFrame>
     {
-        public int Compare(GameplayFrame Frame1, GameplayFrame Frame2)
+        public int Compare(OsuStandardGameplayFrame Frame1, OsuStandardGameplayFrame Frame2)
         {
             return Frame1.Time.CompareTo(Frame2.Time);
         }

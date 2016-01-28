@@ -11,9 +11,11 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 
+using OsuSpectate.GameplaySource;
 using OsuSpectate.Beatmap;
+using ReplayAPI;
 
-namespace OsuSpectate.GameplaySource
+namespace OsuSpectate.GameplayEngine
 {
     public interface RenderObject
     {
@@ -24,12 +26,12 @@ namespace OsuSpectate.GameplaySource
     public class RenderHitCircle : RenderObject
     {
         public OsuStandardHitCircle HitCircle;
-        public OsuStandardGameplayInput GameplayInput;
+        public OsuStandardGameplayEngine GameplayEngine;
         private bool Initialized;
-        public RenderHitCircle(OsuStandardHitCircle c, OsuStandardGameplayInput r)
+        public RenderHitCircle(OsuStandardHitCircle c, OsuStandardGameplayEngine e)
         {
             HitCircle = c;
-            GameplayInput = r;
+            GameplayEngine = e;
         }
         public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
@@ -41,31 +43,30 @@ namespace OsuSpectate.GameplaySource
         }
         public TimeSpan GetStartTime()
         {
-            return HitCircle.getStart().Subtract(GameplayInput.GetARMilliseconds());
+            return HitCircle.getStart().Subtract(GameplayEngine.GetARMilliseconds());
         }
         public TimeSpan GetEndTime()
         {
-            return HitCircle.getStart().Add(GameplayInput.GetOD50Milliseconds());
+            return HitCircle.getStart().Add(GameplayEngine.GetOD50Milliseconds());
         }
     }
     public class RenderSlider : RenderObject
     {
         public OsuStandardSlider Slider;
-        public OsuStandardGameplayInput GameplayInput;
+        public OsuStandardGameplayEngine GameplayEngine;
         public Nullable<int> SliderBorderTexture;
         private bool Initialized;
-        public RenderSlider(OsuStandardSlider s, OsuStandardGameplayInput r)
+        public RenderSlider(OsuStandardSlider s, OsuStandardGameplayEngine e)
         {
-            GameplayInput = r;
+            GameplayEngine = e;
             Slider = s;
         }
         public void computeTexture()
         {
-            SliderBorderTexture = Slider.beatmap.GetSliderTexture(Slider, GameplayInput.GetMods());
+            SliderBorderTexture = Slider.beatmap.GetSliderTexture(Slider, GameplayEngine.getMods());
         }
         public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
-
             Initialized = true;
         }
         public string GetType()
@@ -102,13 +103,13 @@ namespace OsuSpectate.GameplaySource
         public float X;
         public float Y;
         private bool Initialized;
-        public Render300(OsuStandardHitCircle c, List<RenderObject> renderList, List<GameplayEvent> eventList)
+        public Render300(OsuStandardHitCircle c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
         {
             time = c.time;
             X = c.x;
             Y = c.y;
-            eventList.Add(new Render300BeginEvent(this, renderList));
             eventList.Add(new Render300EndEvent(this, renderList));
+            eventList.Add(new Render300BeginEvent(this, renderList));
         }
         public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
@@ -133,13 +134,13 @@ namespace OsuSpectate.GameplaySource
         public float X;
         public float Y;
         private bool Initialized;
-        public Render100(OsuStandardHitCircle c, List<RenderObject> renderList, List<GameplayEvent> eventList)
+        public Render100(OsuStandardHitCircle c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
         {
             time = c.time;
             X = c.x;
             Y = c.y;
-            eventList.Add(new Render100BeginEvent(this, renderList));
             eventList.Add(new Render100EndEvent(this, renderList));
+            eventList.Add(new Render100BeginEvent(this, renderList));
         }
         public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
@@ -164,13 +165,13 @@ namespace OsuSpectate.GameplaySource
         public float X;
         public float Y;
         private bool Initialized;
-        public Render50(OsuStandardHitCircle c, List<RenderObject> renderList, List<GameplayEvent> eventList)
+        public Render50(OsuStandardHitCircle c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
         {
             time = c.time;
             X = c.x;
             Y = c.y;
-            eventList.Add(new Render50BeginEvent(this, renderList));
             eventList.Add(new Render50EndEvent(this, renderList));
+            eventList.Add(new Render50BeginEvent(this, renderList));
         }
         public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
@@ -195,13 +196,13 @@ namespace OsuSpectate.GameplaySource
         public float X;
         public float Y;
         private bool Initialized;
-        public RenderMiss(OsuStandardHitCircle c, List<RenderObject> renderList, List<GameplayEvent> eventList)
+        public RenderMiss(OsuStandardHitCircle c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
         {
             time = c.time;
             X = c.x;
             Y = c.y;
-            eventList.Add(new RenderMissBeginEvent(this, renderList));
             eventList.Add(new RenderMissEndEvent(this, renderList));
+            eventList.Add(new RenderMissBeginEvent(this, renderList));
         }
         public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
         {

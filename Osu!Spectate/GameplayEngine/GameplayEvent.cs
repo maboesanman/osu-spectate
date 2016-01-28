@@ -5,18 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 
 using OsuSpectate.Beatmap;
+using OsuSpectate.GameplaySource;
 using ReplayAPI;
 
-namespace OsuSpectate.GameplaySource
+namespace OsuSpectate.GameplayEngine
 {
     public abstract class GameplayEvent : IComparable<GameplayEvent>
     {
         TimeSpan time;
-        int duplicateIndex;
+        private Guid InstanceID { get;}
         bool handled;
         public GameplayEvent(TimeSpan t)
         {
             time = t;
+            InstanceID = Guid.NewGuid();
         }
         public void handle()
         {
@@ -38,7 +40,7 @@ namespace OsuSpectate.GameplaySource
             }
             else
             {
-                return duplicateIndex.CompareTo(e.getDuplicateIndex());
+                return InstanceID.CompareTo(e.InstanceID);
             }
         }
         public bool isHandled()
@@ -53,13 +55,21 @@ namespace OsuSpectate.GameplaySource
         {
             return time;
         }
-        public int getDuplicateIndex()
+    }
+    public class DumbEvent : GameplayEvent
+    {
+        public DumbEvent(TimeSpan t) : base(t)
         {
-            return duplicateIndex;
+
         }
-        public void setDuplicateIndex(int i)
+        public override void _handle()
         {
-            duplicateIndex = i;
+            throw new NotImplementedException();
+        }
+
+        public override void _kill()
+        {
+            throw new NotImplementedException();
         }
     }
     public class ReplayReleaseEvent : GameplayEvent
@@ -87,43 +97,42 @@ namespace OsuSpectate.GameplaySource
     }
     public class ReplayClickEvent : GameplayEvent
     {
-        List<GameplayEvent> Parent;
-        List<GameplayObject> GameplayList;
+        Tree<GameplayEvent> Parent;
+        Tree<GameplayObject> GameplayList;
         List<RenderObject> RenderList;
-        OsuStandardGameplayInput Replay;
+        OsuStandardGameplayEngine Engine;
         ReplayFrame Frame;
-        public ReplayClickEvent(ReplayFrame frame, List<GameplayEvent> parent, List<GameplayObject> gameplayList, List<RenderObject> renderList, OsuStandardGameplayInput replay)
+        public ReplayClickEvent(ReplayFrame frame, Tree<GameplayEvent> parent, Tree<GameplayObject> gameplayList, List<RenderObject> renderList, OsuStandardGameplayEngine engine)
             : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
         {
             Parent = parent;
             RenderList = renderList;
             GameplayList = gameplayList;
-            Replay = replay;
+            Engine = engine;
             Frame = frame;
             Parent.Add(this);
         }
         public override void _handle()
         {
-            GameplayList.Sort((x, y) => x.GetTime().CompareTo(y.GetTime()));
-            for (int i=0;i<GameplayList.Count;i++)
+            foreach (GameplayObject o in GameplayList)
             {
-                switch(GameplayList.ElementAt(i).GetType())
+                switch(o.GetType())
                 {
                     case ("hitcircle"):
-                        OsuStandardHitCircle c = ((GameplayHitCircle)GameplayList.ElementAt(i)).circle;
-                        if ((Frame.X - c.x) * (Frame.X - c.x) + (Frame.Y - c.y) * (Frame.Y - c.y)<Replay.GetCSRadius()*Replay.GetCSRadius())
+                        OsuStandardHitCircle c = ((GameplayHitCircle)o).circle;
+                        if ((Frame.X - c.x) * (Frame.X - c.x) + (Frame.Y - c.y) * (Frame.Y - c.y)<Engine.GetCSRadius()* Engine.GetCSRadius())
                         {
-                            if(Math.Abs(Frame.Time- GameplayList.ElementAt(i).GetTime().TotalMilliseconds)<Replay.GetOD300Milliseconds().TotalMilliseconds)
+                            if(Math.Abs(Frame.Time- o.GetTime().TotalMilliseconds)< Engine.GetOD300Milliseconds().TotalMilliseconds)
                             {
                                 //Console.WriteLine("300");
                                 new Render300(c,RenderList,Parent);
                             }
-                            else if (Math.Abs(Frame.Time - GameplayList.ElementAt(i).GetTime().TotalMilliseconds) < Replay.GetOD100Milliseconds().TotalMilliseconds)
+                            else if (Math.Abs(Frame.Time - o.GetTime().TotalMilliseconds) < Engine.GetOD100Milliseconds().TotalMilliseconds)
                             {
                                 //Console.WriteLine("100");
                                 new Render100(c, RenderList, Parent);
                             }
-                            else if (Math.Abs(Frame.Time - GameplayList.ElementAt(i).GetTime().TotalMilliseconds) < Replay.GetOD50Milliseconds().TotalMilliseconds)
+                            else if (Math.Abs(Frame.Time - o.GetTime().TotalMilliseconds) < Engine.GetOD50Milliseconds().TotalMilliseconds)
                             {
                                 //Console.WriteLine("50");
                                 new Render50(c, RenderList, Parent);
@@ -132,18 +141,17 @@ namespace OsuSpectate.GameplaySource
                             {
                                 break;
                             }
-                            ((GameplayHitCircle)GameplayList.ElementAt(i)).endEvent.setHandled();
-                            ((GameplayHitCircle)GameplayList.ElementAt(i)).renderEndEvent.setHandled();
-                            ((GameplayHitCircle)GameplayList.ElementAt(i)).renderEndEvent.kill();
-                            ((GameplayHitCircle)GameplayList.ElementAt(i)).endEvent.kill();
-                            
-                            i = GameplayList.Count;
+                            ((GameplayHitCircle)o).renderEndEvent.kill();
+                            ((GameplayHitCircle)o).endEvent.kill();
+
+                            return;
                         }
                         break;
                     default:
                         break;
                 }
             }
+            
         }
         public override void _kill()
         {
@@ -152,9 +160,9 @@ namespace OsuSpectate.GameplaySource
     }
     public class HitCircleBeginEvent : GameplayEvent
     {
-        List<GameplayObject> GameplayList;
+        Tree<GameplayObject> GameplayList;
         GameplayHitCircle GC;
-        public HitCircleBeginEvent(GameplayHitCircle gc, List<GameplayObject> gameplayList)
+        public HitCircleBeginEvent(GameplayHitCircle gc, Tree<GameplayObject> gameplayList)
             : base(gc.GetStartTime())
         {
             GC = gc;
@@ -171,9 +179,9 @@ namespace OsuSpectate.GameplaySource
     }
     public class HitCircleEndEvent : GameplayEvent
     {
-        List<GameplayObject> GameplayList;
+        Tree<GameplayObject> GameplayList;
         GameplayHitCircle GC;
-        public HitCircleEndEvent(GameplayHitCircle gc, List<GameplayObject> gameplayList)
+        public HitCircleEndEvent(GameplayHitCircle gc, Tree<GameplayObject> gameplayList)
             : base(gc.GetEndTime())
         {
             GC = gc;
@@ -274,7 +282,7 @@ namespace OsuSpectate.GameplaySource
         List<RenderObject> RenderList;
         OsuStandardHitCircle Circle;
         RenderHitCircle Render;
-        OsuStandardGameplayInput GameplayInput;
+        OsuStandardGameplayEngine GameplayEngine;
         public RenderHitCircleBeginEvent(RenderHitCircle rc, List<RenderObject> renderList)
             : base(rc.GetStartTime())
         {
@@ -313,8 +321,8 @@ namespace OsuSpectate.GameplaySource
     public class RenderSliderDrawEvent : GameplayEvent
     {
         RenderSlider rs;
-        List<GameplayEvent> Parent;
-        public RenderSliderDrawEvent(TimeSpan time, List<GameplayEvent> parent, RenderSlider slider) : base(time)
+        Tree<GameplayEvent> Parent;
+        public RenderSliderDrawEvent(TimeSpan time, Tree<GameplayEvent> parent, RenderSlider slider) : base(time)
         {
             Parent = parent;
             rs = slider;
@@ -330,26 +338,27 @@ namespace OsuSpectate.GameplaySource
     }
     public class RenderSliderBeginEvent : GameplayEvent
     {
-        List<GameplayEvent> Parent;
+        Tree<GameplayEvent> Parent;
         List<RenderObject> RenderList;
         OsuStandardSlider Slider;
         RenderSlider Render;
         
-        public RenderSliderBeginEvent(OsuStandardSlider slider, List<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardGameplayInput replay)
-            : base(slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(replay.GetMods())))
+        public RenderSliderBeginEvent(OsuStandardSlider slider, Tree<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardGameplayEngine engine)
+            : base(slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(engine.getMods())))
         {
             Parent = parent;
             Slider = slider;
-            Render = new RenderSlider(slider, replay);
+            Render = new RenderSlider(slider, engine);
             RenderList = renderList;
             Parent.Add(this);
-            parent.Add(new RenderSliderDrawEvent((slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(replay.GetMods()))).Subtract(TimeSpan.FromMilliseconds(slider.pixelLength*10.0f)),Parent, Render));
-
+            
+            Parent.Add(new RenderSliderDrawEvent((slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(engine.getMods()))).Subtract(TimeSpan.FromMilliseconds(slider.pixelLength*10.0f)),Parent, Render));
+            
+            
         }
         public override void _handle()
         {
             RenderList.Add(Render);
-           
             Parent.Add(new RenderSliderEndEvent(Slider, Render, Parent, RenderList));
         }
         public override void _kill()
@@ -359,10 +368,10 @@ namespace OsuSpectate.GameplaySource
     }
     public class RenderSliderEndEvent : GameplayEvent
     {
-        List<GameplayEvent> Parent;
+        Tree<GameplayEvent> Parent;
         List<RenderObject> RenderList;
         RenderSlider Render;
-        public RenderSliderEndEvent(OsuStandardSlider slider, RenderSlider render, List<GameplayEvent> parent, List<RenderObject> renderList)
+        public RenderSliderEndEvent(OsuStandardSlider slider, RenderSlider render, Tree<GameplayEvent> parent, List<RenderObject> renderList)
             : base(slider.getEnd())
         {
             Parent = parent;
@@ -382,7 +391,7 @@ namespace OsuSpectate.GameplaySource
     {
         List<RenderObject> RenderList;
         Render300 Render;
-        OsuStandardGameplayInput GameplayInput;
+        OsuStandardGameplayEngine GameplayEngine;
         public Render300BeginEvent(Render300 r300, List<RenderObject> renderList)
             : base(r300.GetStartTime())
         {
@@ -418,7 +427,7 @@ namespace OsuSpectate.GameplaySource
     {
         List<RenderObject> RenderList;
         Render100 Render;
-        OsuStandardGameplayInput GameplayInput;
+        OsuStandardGameplayEngine GameplayEngine;
         public Render100BeginEvent(Render100 r100, List<RenderObject> renderList)
             : base(r100.GetStartTime())
         {
@@ -454,7 +463,7 @@ namespace OsuSpectate.GameplaySource
     {
         List<RenderObject> RenderList;
         Render50 Render;
-        OsuStandardGameplayInput GameplayInput;
+        OsuStandardGameplayEngine GameplayEngine;
         public Render50BeginEvent(Render50 r50, List<RenderObject> renderList)
             : base(r50.GetStartTime())
         {
@@ -490,7 +499,7 @@ namespace OsuSpectate.GameplaySource
     {
         List<RenderObject> RenderList;
         RenderMiss Render;
-        OsuStandardGameplayInput GameplayInput;
+        OsuStandardGameplayEngine GameplayEngine;
         public RenderMissBeginEvent(RenderMiss rMiss, List<RenderObject> renderList)
             : base(rMiss.GetStartTime())
         {

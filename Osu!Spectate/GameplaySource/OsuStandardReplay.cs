@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel;
 
 using ReplayAPI;
 
 using OsuSpectate.Beatmap;
+using OsuSpectate.GameplayEngine;
 
 namespace OsuSpectate.GameplaySource
 {
@@ -15,25 +14,16 @@ namespace OsuSpectate.GameplaySource
     {
         
         public OsuStandardBeatmap Beatmap;
-        private BackgroundWorker sliderRenderer;
 
         private SortedDictionary<TimeSpan, int> ReplayFrameIndex;
         private List<TimeSpan> ReplayFrameIndexKeys;
         private SortedDictionary<TimeSpan, int> LifeFrameIndex;
         private List<TimeSpan> LifeFrameIndexKeys;
 
-        public List<GameplayFrame> GameplayFrames;
-        private SortedDictionary<TimeSpan, int> GameplayFrameIndex;
-        private List<TimeSpan> GameplayFrameIndexKeys;
-
-        private 
-
-        //EventList
-        List<GameplayEvent> EventList;
+        private OsuStandardGameplayEngine GameplayEngine;
+        
         TimeSpan CurrentTime;
-
-        List<RenderObject> RenderList;
-        List<GameplayObject> GameplayList;
+        
 
         public OsuStandardReplay(string replayFile, OsuStandardBeatmap beatmap, bool fullLoad = false) : base(replayFile, fullLoad)
         {
@@ -53,26 +43,8 @@ namespace OsuSpectate.GameplaySource
             LifeFrameIndexKeys = LifeFrameIndex.Keys.ToList();
 
 
-            EventList = new List<GameplayEvent>();
-            RenderList = new List<RenderObject>();
-            GameplayList = new List<GameplayObject>();
-            CurrentTime = TimeSpan.Zero;
-            sliderRenderer = new BackgroundWorker();
-            sliderRenderer.DoWork += RenderSlider;
-            for (int i = 0; i < Beatmap.GetHitObjectCount(); i++)
-            {
-                OsuStandardHitObject ho = Beatmap.GetHitObject(i, Mods);
-                switch (ho.getType())
-                {
-                    case ("hitcircle"):
-                        new GameplayHitCircle((OsuStandardHitCircle)ho, this, GameplayList, RenderList, EventList);
-                        break;
-                    case ("slider"):
-                        new RenderSliderBeginEvent((OsuStandardSlider)ho, EventList, RenderList, this);
-                        break;
-
-                }
-            }
+            GameplayEngine = new OsuStandardGameplayEngine(beatmap, GetMods());
+            
             for( int i=1; i<ReplayFrames.Count;i++)
             {
                 if (ReplayFrames[i].Keys!= ReplayFrames[i-1].Keys)
@@ -87,28 +59,28 @@ namespace OsuSpectate.GameplaySource
                         {
                             if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.K1) != ReplayAPI.Keys.K1)
                             {
-                                new ReplayClickEvent(ReplayFrames[i], EventList, GameplayList, RenderList, this);
+                                GameplayEngine.AddClickEvent(ReplayFrames[i]);
                             }
                         }
                         if ((ReplayFrames[i].Keys & ReplayAPI.Keys.K2) == ReplayAPI.Keys.K2)
                         {
                             if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.K2) != ReplayAPI.Keys.K2)
                             {
-                                new ReplayClickEvent(ReplayFrames[i], EventList, GameplayList, RenderList, this);
+                                GameplayEngine.AddClickEvent(ReplayFrames[i]);
                             }
                         }
                         if ((ReplayFrames[i].Keys & ReplayAPI.Keys.M1) == ReplayAPI.Keys.M1)
                         {
                             if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.M1) != ReplayAPI.Keys.M1)
                             {
-                                new ReplayClickEvent(ReplayFrames[i], EventList, GameplayList, RenderList, this);
+                                GameplayEngine.AddClickEvent(ReplayFrames[i]);
                             }
                         }
                         if ((ReplayFrames[i].Keys & ReplayAPI.Keys.M2) == ReplayAPI.Keys.M2)
                         {
                             if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.M2) != ReplayAPI.Keys.M2)
                             {
-                                new ReplayClickEvent(ReplayFrames[i], EventList, GameplayList, RenderList, this);
+                                GameplayEngine.AddClickEvent(ReplayFrames[i]);
                             }
                         }
 
@@ -133,13 +105,11 @@ namespace OsuSpectate.GameplaySource
         {
             return Mods;
         }
-        public GameplayFrame GetGameplayFrame(TimeSpan t)
+        public OsuStandardGameplayFrame GetGameplayFrame(TimeSpan t)
         {
-            int a = GameplayFrameIndexKeys.BinarySearch(t);
-            Console.WriteLine(a);
-            return GameplayFrames.ElementAt(GameplayFrameIndex[GameplayFrameIndexKeys.ElementAt(a)]);
+            return GameplayEngine.getGameplayFrame(t);
         }
-        public GameplayFrame GetGameplayFrame(long milliseconds)
+        public OsuStandardGameplayFrame GetGameplayFrame(long milliseconds)
         {
             return GetGameplayFrame(new TimeSpan(milliseconds * TimeSpan.TicksPerMillisecond));
         }
@@ -209,23 +179,7 @@ namespace OsuSpectate.GameplaySource
         }
         public void HandleUntil(TimeSpan time)
         {
-            bool x = true;
-            while (EventList.Count > 0 && x)
-            {
-                EventList.Sort();
-                if (EventList.First().getTime().CompareTo(time) < 0)
-                {
-                    if(!EventList.First().isHandled())
-                    {
-                        EventList.First().handle();
-                    }
-                    EventList.Remove(EventList.First());
-                }
-                else
-                {
-                    x = false;
-                }
-            }
+            GameplayEngine.HandleUntil(time);
         }
         public OsuStandardBeatmap GetBeatmap()
         {
@@ -233,18 +187,7 @@ namespace OsuSpectate.GameplaySource
         }
         public List<RenderObject> GetRenderList()
         {
-            return RenderList;
-        }
-        public void RenderSlider(object sender, DoWorkEventArgs e)
-        {
-            for (int i = 0; i < ((OsuStandardBeatmap)e.Argument).GetHitObjectCount(); i++)
-            {
-                OsuStandardHitObject ho = ((OsuStandardBeatmap)e.Argument).GetHitObject(i, Mods);
-                if(ho.getType()=="slider")
-                {
-                    Beatmap.GetSliderTexture((OsuStandardSlider)ho, GetMods());
-                }
-            }
+            return GameplayEngine.getRenderList();
         }
     }
 }

@@ -15,6 +15,7 @@ using OsuSpectate.GameplaySource;
 using OsuSpectate.Beatmap;
 using OsuSpectate.Skin;
 using OsuSpectate.Audio;
+using OsuSpectate.GameplayEngine;
 
 namespace OsuSpectate.View
 {

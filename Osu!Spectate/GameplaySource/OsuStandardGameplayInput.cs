@@ -12,6 +12,7 @@ using OsuSpectate.Skin;
 using OsuSpectate.View;
 
 using ReplayAPI;
+using OsuSpectate.GameplayEngine;
 
 namespace OsuSpectate.GameplaySource
 {
@@ -20,8 +21,8 @@ namespace OsuSpectate.GameplaySource
         string GetPlayerName();
         Mods GetMods();
 
-        GameplayFrame GetGameplayFrame(TimeSpan time);
-        GameplayFrame GetGameplayFrame(long milliseconds);
+        OsuStandardGameplayFrame GetGameplayFrame(TimeSpan time);
+        OsuStandardGameplayFrame GetGameplayFrame(long milliseconds);
         ReplayFrame GetReplayFrame(TimeSpan time);
         ReplayFrame GetReplayFrame(long milliseconds);
         
