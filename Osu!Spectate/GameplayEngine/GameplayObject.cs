@@ -33,7 +33,7 @@ namespace OsuSpectate.GameplayEngine
             engine = e;
 
             RenderHitCircle render = new RenderHitCircle(c, e);
-            endEvent = new HitCircleEndEvent(this, gl);
+            endEvent = new HitCircleEndEvent(this, gl, el);
             renderEndEvent = new RenderHitCircleEndEvent(render, rl);
             el.Add(endEvent);
             el.Add(renderEndEvent);

@@ -5,30 +5,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ReplayAPI;
+
 namespace OsuSpectate
 {
     class test
     {
         public static void Main(string[] args)
         {
-            Tree<int> stuff = new Tree<int>();
-            var numberList = Enumerable.Range(0, 15).ToList();
-            numberList = numberList.OrderBy(a => Guid.NewGuid()).ToList();
-            for(int i=0;i<numberList.Count;i++)
-            {
-                stuff.Add(numberList.ElementAt(i));
-            }
-            for (int i = 0; i < numberList.Count; i++)
-            {
-                Console.WriteLine(stuff);
-                //stuff.Display();
-                Console.WriteLine(stuff.Count);
-                stuff.Remove(numberList.ElementAt(i));
-            }
-            Console.WriteLine(stuff);
-            //stuff.Display();
+            Keys k = Keys.M2;
+            Console.WriteLine(Computation.K1Down(Keys.K1));
+            Console.WriteLine(Computation.K1Down(Keys.K2));
+            Console.WriteLine(Computation.K1Down(Keys.M1));
+            Console.WriteLine(Computation.K1Down(Keys.M2));
+            Console.WriteLine(Computation.K2Down(Keys.K1));
+            Console.WriteLine(Computation.K2Down(Keys.K2));
+            Console.WriteLine(Computation.K2Down(Keys.M1));
+            Console.WriteLine(Computation.K2Down(Keys.M2));
+            Console.WriteLine(Computation.M1Down(Keys.K1));
+            Console.WriteLine(Computation.M1Down(Keys.K2));
+            Console.WriteLine(Computation.M1Down(Keys.M1));
+            Console.WriteLine(Computation.M1Down(Keys.M2));
+            Console.WriteLine(Computation.M2Down(Keys.K1));
+            Console.WriteLine(Computation.M2Down(Keys.K2));
+            Console.WriteLine(Computation.M2Down(Keys.M1));
+            Console.WriteLine(Computation.M2Down(Keys.M2));
+            Console.WriteLine(((((int)k) / 5) & 2));
             Console.ReadKey();
-
         }
         enum Color
         {

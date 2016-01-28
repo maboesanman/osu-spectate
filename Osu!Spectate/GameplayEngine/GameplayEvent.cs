@@ -19,6 +19,7 @@ namespace OsuSpectate.GameplayEngine
         {
             time = t;
             InstanceID = Guid.NewGuid();
+            handled = false;
         }
         public void handle()
         {
@@ -114,7 +115,8 @@ namespace OsuSpectate.GameplayEngine
         }
         public override void _handle()
         {
-            foreach (GameplayObject o in GameplayList)
+            Console.WriteLine(Frame.Time + " " + Frame.Keys);
+            foreach (GameplayObject o in (GameplayList))
             {
                 switch(o.GetType())
                 {
@@ -143,7 +145,6 @@ namespace OsuSpectate.GameplayEngine
                             }
                             ((GameplayHitCircle)o).renderEndEvent.kill();
                             ((GameplayHitCircle)o).endEvent.kill();
-
                             return;
                         }
                         break;
@@ -180,15 +181,18 @@ namespace OsuSpectate.GameplayEngine
     public class HitCircleEndEvent : GameplayEvent
     {
         Tree<GameplayObject> GameplayList;
+        Tree<GameplayEvent> EventList;
         GameplayHitCircle GC;
-        public HitCircleEndEvent(GameplayHitCircle gc, Tree<GameplayObject> gameplayList)
+        public HitCircleEndEvent(GameplayHitCircle gc, Tree<GameplayObject> gameplayList, Tree<GameplayEvent> eventList)
             : base(gc.GetEndTime())
         {
             GC = gc;
             GameplayList = gameplayList;
+            EventList = eventList;
         }
         public override void _handle()
         {
+            new RenderMiss(GC.circle, GC.engine.getRenderList(),EventList);
             GameplayList.Remove(GC);
         }
         public override void _kill()

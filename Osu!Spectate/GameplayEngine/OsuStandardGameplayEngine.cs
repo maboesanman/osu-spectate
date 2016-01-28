@@ -39,7 +39,7 @@ namespace OsuSpectate.GameplayEngine
                         new GameplayHitCircle((OsuStandardHitCircle)ho, this, objectList, renderList, eventList);
                         break;
                     case ("slider"):
-                        beatmap.GenerateSliderTexture((OsuStandardSlider)ho,getMods());
+                        //beatmap.GenerateSliderTexture((OsuStandardSlider)ho,getMods());
                         new RenderSliderBeginEvent((OsuStandardSlider)ho, eventList, renderList, this);
                         break;
 
@@ -119,6 +119,7 @@ namespace OsuSpectate.GameplayEngine
         private Node head;
         private Node tail;
         public int Count;
+        
         public Tree()
         {
             Count = 0;
@@ -256,6 +257,10 @@ namespace OsuSpectate.GameplayEngine
                 yield return temp.item;
                 temp = temp.next;
             }
+        }
+        public IEnumerator<T> GetReverseEnumerator()
+        {
+            return new ReverseList(this);
         }
 
 
@@ -514,6 +519,64 @@ namespace OsuSpectate.GameplayEngine
                 if (left != null) { left.display(); }
                 Console.Write("({0}) ", item);
                 if (right != null) { right.display(); }
+            }
+        }
+        private class ReverseList : IEnumerator<T>
+        {
+            private Node head;
+            private Node tail;
+            private Node current;
+            public ReverseList(Tree<T> tree)
+            {
+                head = tree.head;
+                tail = tree.tail;
+                current = head.next;
+            }
+
+            public T Current
+            {
+                get
+                {
+                    return current.item;
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return current.item;
+                }
+            }
+
+            public void Dispose()
+            {
+                
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                Node temp = tail.previous;
+                while (temp != head)
+                {
+                    yield return temp.item;
+                    temp = temp.previous;
+                }
+            }
+
+            public bool MoveNext()
+            {
+                if (current!= head)
+                {
+                    current = current.previous;
+                    return true;
+                }
+                return false;
+            }
+
+            public void Reset()
+            {
+                current = tail.previous;
             }
         }
     }

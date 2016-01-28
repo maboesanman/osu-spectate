@@ -47,6 +47,7 @@ namespace OsuSpectate.GameplaySource
             
             for( int i=1; i<ReplayFrames.Count;i++)
             {
+                
                 if (ReplayFrames[i].Keys!= ReplayFrames[i-1].Keys)
                 {
                     if (ReplayFrames[i].Keys == ReplayAPI.Keys.None)
@@ -55,30 +56,31 @@ namespace OsuSpectate.GameplaySource
                     }
                     else
                     {
-                        if ((ReplayFrames[i].Keys & ReplayAPI.Keys.K1) == ReplayAPI.Keys.K1)
+                        int K = ((int)ReplayFrames[i].Keys) / 5;
+                        if (Computation.K1Down(ReplayFrames[i].Keys))
                         {
-                            if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.K1) != ReplayAPI.Keys.K1)
+                            if (!Computation.K1Down(ReplayFrames[i-1].Keys))
                             {
                                 GameplayEngine.AddClickEvent(ReplayFrames[i]);
                             }
                         }
-                        if ((ReplayFrames[i].Keys & ReplayAPI.Keys.K2) == ReplayAPI.Keys.K2)
+                        if (Computation.K2Down(ReplayFrames[i].Keys))
                         {
-                            if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.K2) != ReplayAPI.Keys.K2)
+                            if (!Computation.K2Down(ReplayFrames[i - 1].Keys))
                             {
                                 GameplayEngine.AddClickEvent(ReplayFrames[i]);
                             }
                         }
-                        if ((ReplayFrames[i].Keys & ReplayAPI.Keys.M1) == ReplayAPI.Keys.M1)
+                        if (Computation.M1Down(ReplayFrames[i].Keys))
                         {
-                            if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.M1) != ReplayAPI.Keys.M1)
+                            if (!Computation.M1Down(ReplayFrames[i - 1].Keys))
                             {
                                 GameplayEngine.AddClickEvent(ReplayFrames[i]);
                             }
                         }
-                        if ((ReplayFrames[i].Keys & ReplayAPI.Keys.M2) == ReplayAPI.Keys.M2)
+                        if (Computation.M2Down(ReplayFrames[i].Keys))
                         {
-                            if ((ReplayFrames[i - 1].Keys & ReplayAPI.Keys.M2) != ReplayAPI.Keys.M2)
+                            if (!Computation.M2Down(ReplayFrames[i - 1].Keys))
                             {
                                 GameplayEngine.AddClickEvent(ReplayFrames[i]);
                             }
