@@ -45,21 +45,5 @@ namespace OsuSpectate
         {
             return (float)Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
         }
-        public static bool K1Down(ReplayAPI.Keys k)
-        {
-            return ((((int)k) / 5) & 1) == 1;
-        }
-        public static bool K2Down(ReplayAPI.Keys k)
-        {
-            return ((((int)k) / 5) & 2) == 2;
-        }
-        public static bool M1Down(ReplayAPI.Keys k)
-        {
-            return ((((int)k) % 5) & 1) == 1;
-        }
-        public static bool M2Down(ReplayAPI.Keys k)
-        {
-            return ((((int)k) % 5) & 2) == 2;
-        }
     }
 }

@@ -336,6 +336,14 @@ namespace OsuSpectate.View
                         
                         break;
                     #endregion
+                    default:
+                        break;
+                }
+            }
+            for (int i = GameplayInput.GetRenderList().Count - 1; i >= 0; i--)
+            {
+                switch (GameplayInput.GetRenderList().ElementAt(i).GetType())
+                {
                     case ("300"):
                         #region
                         Render300 r300 = (Render300)(GameplayInput.GetRenderList().ElementAt(i));
@@ -352,8 +360,9 @@ namespace OsuSpectate.View
                         GL.TexCoord2(0, 1);
                         GL.Vertex2(Computation.XComputation(r300.X - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(r300.Y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
-                        #endregion
+                        
                         break;
+                        #endregion
                     case ("100"):
                         #region
                         Render100 r100 = (Render100)(GameplayInput.GetRenderList().ElementAt(i));
@@ -370,8 +379,9 @@ namespace OsuSpectate.View
                         GL.TexCoord2(0, 1);
                         GL.Vertex2(Computation.XComputation(r100.X - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(r100.Y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
-                        #endregion
+                        
                         break;
+                        #endregion
                     case ("50"):
                         #region
                         Render50 r50 = (Render50)(GameplayInput.GetRenderList().ElementAt(i));
@@ -388,8 +398,8 @@ namespace OsuSpectate.View
                         GL.TexCoord2(0, 1);
                         GL.Vertex2(Computation.XComputation(r50.X - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(r50.Y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
-                        #endregion
                         break;
+                        #endregion
                     case ("Miss"):
                         #region
                         RenderMiss rMiss = (RenderMiss)(GameplayInput.GetRenderList().ElementAt(i));
@@ -406,7 +416,10 @@ namespace OsuSpectate.View
                         GL.TexCoord2(0, 1);
                         GL.Vertex2(Computation.XComputation(rMiss.X - GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(rMiss.Y + GameplayInput.GetCSRadius(), OriginX, OriginY, width, height, windowWidth, windowHeight));
                         GL.End();
-                        #endregion
+                        
+                        break;
+                    #endregion
+                    default:
                         break;
                 }
             }

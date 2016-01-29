@@ -536,13 +536,13 @@ namespace OsuSpectate.Beatmap
         {
             if ((mods & ReplayAPI.Mods.HardRock) == ReplayAPI.Mods.HardRock)
             {
-                return 4.0f * (12.0f - Math.Min(CircleSize * 1.3f, 10.0f));
+                return (512 / 16.0f) * (1.0f - 0.7f * (Math.Min(CircleSize * 1.3f, 10.0f) - 5.0f) / 5.0f);
             }
             if ((mods & ReplayAPI.Mods.Easy) == ReplayAPI.Mods.Easy)
             {
-                return 4.0f * (12.0f - CircleSize*0.5f);
+                return (512 / 16.0f) * (1.0f - 0.7f * (CircleSize * 0.5f - 5.0f) / 5.0f);
             }
-            return 4.0f * (12.0f - CircleSize);
+            return (512 / 16.0f) * (1.0f - 0.7f * (CircleSize - 5.0f) / 5.0f);
         }
         public int GetHitObjectCount()
         {

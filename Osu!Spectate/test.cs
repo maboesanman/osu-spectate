@@ -14,22 +14,7 @@ namespace OsuSpectate
         public static void Main(string[] args)
         {
             Keys k = Keys.M2;
-            Console.WriteLine(Computation.K1Down(Keys.K1));
-            Console.WriteLine(Computation.K1Down(Keys.K2));
-            Console.WriteLine(Computation.K1Down(Keys.M1));
-            Console.WriteLine(Computation.K1Down(Keys.M2));
-            Console.WriteLine(Computation.K2Down(Keys.K1));
-            Console.WriteLine(Computation.K2Down(Keys.K2));
-            Console.WriteLine(Computation.K2Down(Keys.M1));
-            Console.WriteLine(Computation.K2Down(Keys.M2));
-            Console.WriteLine(Computation.M1Down(Keys.K1));
-            Console.WriteLine(Computation.M1Down(Keys.K2));
-            Console.WriteLine(Computation.M1Down(Keys.M1));
-            Console.WriteLine(Computation.M1Down(Keys.M2));
-            Console.WriteLine(Computation.M2Down(Keys.K1));
-            Console.WriteLine(Computation.M2Down(Keys.K2));
-            Console.WriteLine(Computation.M2Down(Keys.M1));
-            Console.WriteLine(Computation.M2Down(Keys.M2));
+            k.HasFlag(Keys.K2);
             Console.WriteLine(((((int)k) / 5) & 2));
             Console.ReadKey();
         }

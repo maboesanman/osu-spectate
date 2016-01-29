@@ -47,7 +47,7 @@ namespace OsuSpectate.GameplaySource
             
             for( int i=1; i<ReplayFrames.Count;i++)
             {
-                
+                bool added = false;
                 if (ReplayFrames[i].Keys!= ReplayFrames[i-1].Keys)
                 {
                     if (ReplayFrames[i].Keys == ReplayAPI.Keys.None)
@@ -56,33 +56,40 @@ namespace OsuSpectate.GameplaySource
                     }
                     else
                     {
-                        int K = ((int)ReplayFrames[i].Keys) / 5;
-                        if (Computation.K1Down(ReplayFrames[i].Keys))
+                        if (ReplayFrames[i].Keys.HasFlag(Keys.K1))
                         {
-                            if (!Computation.K1Down(ReplayFrames[i-1].Keys))
+                            if (!ReplayFrames[i-1].Keys.HasFlag(Keys.K1))
                             {
-                                GameplayEngine.AddClickEvent(ReplayFrames[i]);
+                                if(!added)
+                                    GameplayEngine.AddClickEvent(ReplayFrames[i]);
+                                added = true;
                             }
                         }
-                        if (Computation.K2Down(ReplayFrames[i].Keys))
+                        if (ReplayFrames[i].Keys.HasFlag(Keys.K2))
                         {
-                            if (!Computation.K2Down(ReplayFrames[i - 1].Keys))
+                            if (!ReplayFrames[i - 1].Keys.HasFlag(Keys.K2))
                             {
-                                GameplayEngine.AddClickEvent(ReplayFrames[i]);
+                                if (!added)
+                                    GameplayEngine.AddClickEvent(ReplayFrames[i]);
+                                added = true;
                             }
                         }
-                        if (Computation.M1Down(ReplayFrames[i].Keys))
+                        if (ReplayFrames[i].Keys.HasFlag(Keys.M1))
                         {
-                            if (!Computation.M1Down(ReplayFrames[i - 1].Keys))
+                            if (!ReplayFrames[i - 1].Keys.HasFlag(Keys.M1))
                             {
-                                GameplayEngine.AddClickEvent(ReplayFrames[i]);
+                                if (!added)
+                                    GameplayEngine.AddClickEvent(ReplayFrames[i]);
+                                added = true;
                             }
                         }
-                        if (Computation.M2Down(ReplayFrames[i].Keys))
+                        if (ReplayFrames[i].Keys.HasFlag(Keys.M2))
                         {
-                            if (!Computation.M2Down(ReplayFrames[i - 1].Keys))
+                            if (!ReplayFrames[i - 1].Keys.HasFlag(Keys.M2))
                             {
-                                GameplayEngine.AddClickEvent(ReplayFrames[i]);
+                                if (!added)
+                                    GameplayEngine.AddClickEvent(ReplayFrames[i]);
+                                added = true;
                             }
                         }
 

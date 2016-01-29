@@ -66,6 +66,7 @@ namespace OsuSpectate.GameplayEngine
                 }
             }
         }
+    
         public void AddClickEvent(ReplayAPI.ReplayFrame frame)
         {
             new ReplayClickEvent(frame, eventList, objectList, renderList, this);

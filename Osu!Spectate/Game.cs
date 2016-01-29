@@ -42,22 +42,24 @@ namespace OsuSpectate
 
             OsuSkin Skin = new OsuSkin(@"C:\Program Files (x86)\osu!\Skins\Aesthetic\", true);
             //OsuSkin Skin = new OsuSkin(@"\\", true);
-            Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\93523 Tatsh - IMAGE -MATERIAL- Version 0\Tatsh - IMAGE -MATERIAL- Version 0 (Scorpiour) [Scorpiour].osu");
-            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\-GN - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2015-12-20) Osu.osr", Beatmap, true));
-            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\cptnXn - xi - Blue Zenith [FOUR DIMENSIONS] (2015-12-18) Osu.osr", Beatmap, true));
-            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\maboesanman - Renard & t+pazolite - Banned Chipscape [DOG -Smooth Jazz Edition-] (2016-01-28) Osu.osr", Beatmap, true));
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - Tatsh - IMAGE -MATERIAL- Version 0 [Scorpiour] (2015-12-08) Osu.osr", Beatmap, true));
+            Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\other\39804 xi - FREEDOM DiVE\xi - FREEDOM DiVE (Nakagawa-Kanon) [FOUR DIMENSIONS].osu");
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\-GN - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2015-12-20) Osu.osr", Beatmap, true));
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\cptnXn - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2014-05-11) Osu.osr", Beatmap, true));
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2016-01-18) Osu.osr", Beatmap, true));
+            
             //Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\203309 Ni-Sokkususu - Shukusai no Elementalia\Ni-Sokkususu - Shukusai no Elementalia (Silynn) [Kneesocks].osu");
             //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\_index - Ni-Sokkususu - Shukusai no Elementalia [Kneesocks] (2015-04-03) Osu.osr", Beatmap, true));
 
 
             MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new SongBackgroundView(Beatmap, 200, Color.Black, 0)));
-            MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
-            //MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
-            //MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio)));
+            MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f/3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
+            MyArrangement.Views.Add(new ViewContainer(-1.0f + 2.0f / 3, -1.0f, 2.0f / 3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
+            MyArrangement.Views.Add(new ViewContainer(-1.0f+ 4.0f / 3, -1.0f, 2.0f/3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio)));
             Audio = new AudioPlayer(GameplayInputList[0]);
             timer.Start();
             timer.Elapsed.Add(Audio.getCurrentTime().Subtract(timer.Elapsed));
+            //VSync = VSyncMode.Off;
+            //WindowState = WindowState.Fullscreen;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
@@ -82,10 +84,11 @@ namespace OsuSpectate
             MyArrangement.Draw(timer.Elapsed,Width,Height);
 
             SwapBuffers();
-            
-                //System.GC.Collect();
-                //System.GC.WaitForPendingFinalizers();
-            
+
+            //Console.WriteLine((int)RenderFrequency);
+            //System.GC.Collect();
+            //System.GC.WaitForPendingFinalizers();
+
         }
         protected override void OnResize(EventArgs e)
         {

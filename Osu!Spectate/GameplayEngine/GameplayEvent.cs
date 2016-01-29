@@ -115,8 +115,8 @@ namespace OsuSpectate.GameplayEngine
         }
         public override void _handle()
         {
-            Console.WriteLine(Frame.Time + " " + Frame.Keys);
-            foreach (GameplayObject o in (GameplayList))
+            //Console.WriteLine(Frame.Time + " " + Frame.Keys);
+            foreach (GameplayObject o in GameplayList)
             {
                 switch(o.GetType())
                 {
