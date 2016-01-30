@@ -46,13 +46,13 @@ namespace OsuSpectate
             GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\-GN - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2015-12-20) Osu.osr", Beatmap, true));
             GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\cptnXn - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2014-05-11) Osu.osr", Beatmap, true));
             GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2016-01-18) Osu.osr", Beatmap, true));
-            
+
             //Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\203309 Ni-Sokkususu - Shukusai no Elementalia\Ni-Sokkususu - Shukusai no Elementalia (Silynn) [Kneesocks].osu");
             //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\_index - Ni-Sokkususu - Shukusai no Elementalia [Kneesocks] (2015-04-03) Osu.osr", Beatmap, true));
 
 
-            MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new SongBackgroundView(Beatmap, 200, Color.Black, 0)));
-            MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f/3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
+            MyArrangement.Views.Add(new ViewContainer(-1f, -1f, 2f, 2f, new SongBackgroundView(Beatmap, .8f, Color.Black, BackgroundImageFitType.MAXIMUM_FIT)));
+            MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f / 3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
             MyArrangement.Views.Add(new ViewContainer(-1.0f + 2.0f / 3, -1.0f, 2.0f / 3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
             MyArrangement.Views.Add(new ViewContainer(-1.0f+ 4.0f / 3, -1.0f, 2.0f/3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio)));
             Audio = new AudioPlayer(GameplayInputList[0]);
@@ -71,9 +71,8 @@ namespace OsuSpectate
         {
             base.OnRenderFrame(e);
             timer.Elapsed.Add(Audio.getCurrentTime().Subtract(timer.Elapsed));
-            GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.ClearColor(Color.Black);
-
+            GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
             GL.ClearColor(1.0f, 1.0f, 1.0f, 1.0f);

@@ -88,6 +88,7 @@ namespace OsuSpectate.View
             //player name
             float buffer = 40.0f;
             GL.BindTexture(TextureTarget.Texture2D, BackgroundDimTexture);
+            GL.Color3(1.0f, 1.0f, 1.0f);
             GL.Begin(PrimitiveType.Quads);
             GL.TexCoord2(0, 1);
             GL.Vertex2(Computation.XComputation(-buffer, OriginX, OriginY, width, height, windowWidth, windowHeight), Computation.YComputation(-buffer, OriginX, OriginY, width, height, windowWidth, windowHeight));

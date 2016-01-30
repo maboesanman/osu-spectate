@@ -16,28 +16,27 @@ namespace OsuSpectate.View
 {
     public class SongBackgroundView : View
     {
-        private int BackgroundTexture;
-        private byte BackgroundDim;
-        private int BackgroundDimTexture;
+        private float BackgroundDim;
         private OsuStandardBeatmap beatmap;
-        private BackgroundImageFitType FitType; 
+        private BackgroundImageFitType FitType;
+        private Color Tint;
 
-        public SongBackgroundView(OsuStandardBeatmap map, byte dim, Color tint, BackgroundImageFitType fit)
+        public SongBackgroundView(OsuStandardBeatmap map, float dim, Color tint, BackgroundImageFitType fit)
         {
             BackgroundDim = dim;
             beatmap = map;
             FitType = fit;
-            SetTint(BackgroundDim, tint);
-            
+            Tint = Computation.ColorFromHSL(tint.GetHue(),tint.GetSaturation(),1.0f-BackgroundDim);
         }
 
         public void Draw(TimeSpan time, float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
-            
+            GL.BindTexture(TextureTarget.Texture2D, beatmap.GetBackgroundTexture());
+            GL.Color3(Tint.R/256.0f, Tint.G / 256.0f, Tint.B / 256.0f);
+            GL.Disable(EnableCap.Blend);
             switch (FitType)
             {
                 case (BackgroundImageFitType.STRETCH):
-                    GL.BindTexture(TextureTarget.Texture2D, beatmap.GetBackgroundTexture());
                     GL.Begin(PrimitiveType.Quads);
 
                     GL.TexCoord2(0, 1);
@@ -49,152 +48,176 @@ namespace OsuSpectate.View
                     GL.TexCoord2(0, 0);
                     GL.Vertex2(x, y + height);
                     GL.End();
-
-                    GL.BindTexture(TextureTarget.Texture2D, BackgroundDimTexture);
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(0, 1);
-                    GL.Vertex2(x, y);
-                    GL.TexCoord2(1, 1);
-                    GL.Vertex2(x + width, y);
-                    GL.TexCoord2(1, 0);
-                    GL.Vertex2(x + width, y + height);
-                    GL.TexCoord2(0, 0);
-                    GL.Vertex2(x, y + height);
-                    GL.End();
+                    
                     break;
                 case (BackgroundImageFitType.VERTICAL_FIT):
-                    GL.BindTexture(TextureTarget.Texture2D, beatmap.GetBackgroundTexture());
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(.5f - (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (height * windowHeight * beatmap.GetBackgroundTextureWidth()), 1.0f);
-                    GL.Vertex2(x + width / 2 - (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (windowWidth * beatmap.GetBackgroundTextureHeight()), y);
-                    GL.TexCoord2(.5f + (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (height * windowHeight * beatmap.GetBackgroundTextureWidth()), 1.0f);
-                    GL.Vertex2(x + width / 2 + (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (windowWidth * beatmap.GetBackgroundTextureHeight()), y);
-                    GL.TexCoord2(.5f + (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (height * windowHeight * beatmap.GetBackgroundTextureWidth()), 0.0f);
-                    GL.Vertex2(x + width / 2 + (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (windowWidth * beatmap.GetBackgroundTextureHeight()), y + height);
-                    GL.TexCoord2(.5f - (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (height * windowHeight * beatmap.GetBackgroundTextureWidth()), 0.0f);
-                    GL.Vertex2(x + width / 2 - (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (windowWidth * beatmap.GetBackgroundTextureHeight()), y + height);
-                    GL.End();
-
-                    GL.BindTexture(TextureTarget.Texture2D, BackgroundDimTexture);
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(0, 1);
-                    GL.Vertex2(x, y);
-                    GL.TexCoord2(1, 1);
-                    GL.Vertex2(x + width, y);
-                    GL.TexCoord2(1, 0);
-                    GL.Vertex2(x + width, y + height);
-                    GL.TexCoord2(0, 0);
-                    GL.Vertex2(x, y + height);
-                    GL.End();
+                    if(beatmap.GetBackgroundTextureWidth()*height*windowHeight<beatmap.GetBackgroundTextureHeight()*width*windowWidth)
+                    {
+                        //letterbox
+                        float midx = width / 2.0f + x;
+                        float dx = .5f * height * windowHeight / windowWidth * beatmap.GetBackgroundTextureWidth() / beatmap.GetBackgroundTextureHeight();
+                        float midy = height / 2.0f + y;
+                        float dy = height / 2.0f;
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.TexCoord2(0, 1);
+                        GL.Vertex2(midx - dx, midy - dy);
+                        GL.TexCoord2(1, 1);
+                        GL.Vertex2(midx + dx, midy - dy);
+                        GL.TexCoord2(1, 0);
+                        GL.Vertex2(midx + dx, midy + dy);
+                        GL.TexCoord2(0, 0);
+                        GL.Vertex2(midx - dx, midy + dy);
+                        GL.End();
+                    } else
+                    {
+                        //overscan
+                        float midx = .5f;
+                        float dx = .5f * 1.0f / (height * windowHeight / width / windowWidth * beatmap.GetBackgroundTextureWidth() / beatmap.GetBackgroundTextureHeight());
+                        float midy = .5f;
+                        float dy = .5f;
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.TexCoord2(midx-dx, midy + dy);
+                        GL.Vertex2(x, y);
+                        GL.TexCoord2(midx + dx, midy + dy);
+                        GL.Vertex2(x + width, y);
+                        GL.TexCoord2(midx + dx, midy - dy);
+                        GL.Vertex2(x + width, y + height);
+                        GL.TexCoord2(midx - dx, midy - dy);
+                        GL.Vertex2(x, y + height);
+                        GL.End();
+                    }
+                    
                     break;
                 case (BackgroundImageFitType.HORIZONTAL_FIT):
-                    GL.BindTexture(TextureTarget.Texture2D, beatmap.GetBackgroundTexture());
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(0.0f, 1);
-                    GL.Vertex2(x, y + height / 2 - (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(0.0f, .5f - (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x, y + height / 2 + (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(1.0f, .5f - (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x + width, y + height / 2 + (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(1.0f, .5f + (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x + width, y + height / 2 - (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.End();
-
-                    GL.BindTexture(TextureTarget.Texture2D, BackgroundDimTexture);
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(0, 1);
-                    GL.Vertex2(x, y);
-                    GL.TexCoord2(1, 1);
-                    GL.Vertex2(x + width, y);
-                    GL.TexCoord2(1, 0);
-                    GL.Vertex2(x + width, y + height);
-                    GL.TexCoord2(0, 0);
-                    GL.Vertex2(x, y + height);
-                    GL.End();
+                    if (beatmap.GetBackgroundTextureWidth() * height * windowHeight < beatmap.GetBackgroundTextureHeight() * width * windowWidth)
+                    {
+                        //overscan
+                        float midx = .5f;
+                        float dx = .5f;
+                        float midy = .5f;
+                        float dy = .5f * height * windowHeight / width / windowWidth * beatmap.GetBackgroundTextureWidth() / beatmap.GetBackgroundTextureHeight();
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.TexCoord2(midx - dx, midy + dy);
+                        GL.Vertex2(x, y);
+                        GL.TexCoord2(midx + dx, midy + dy);
+                        GL.Vertex2(x + width, y);
+                        GL.TexCoord2(midx + dx, midy - dy);
+                        GL.Vertex2(x + width, y + height);
+                        GL.TexCoord2(midx - dx, midy - dy);
+                        GL.Vertex2(x, y + height);
+                        GL.End();
+                    }
+                    else
+                    {
+                        //letterbox
+                        float midx = width / 2.0f + x;
+                        float dx = width / 2.0f;
+                        float midy = height / 2.0f + y;
+                        float dy = .5f * 1.0f / (windowHeight / width / windowWidth * beatmap.GetBackgroundTextureWidth() / beatmap.GetBackgroundTextureHeight());
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.TexCoord2(0, 1);
+                        GL.Vertex2(midx - dx, midy - dy);
+                        GL.TexCoord2(1, 1);
+                        GL.Vertex2(midx + dx, midy - dy);
+                        GL.TexCoord2(1, 0);
+                        GL.Vertex2(midx + dx, midy + dy);
+                        GL.TexCoord2(0, 0);
+                        GL.Vertex2(midx - dx, midy + dy);
+                        GL.End();
+                    }
                     break;
-                case (BackgroundImageFitType.MINIMUM_FIT)://not done
-                    GL.BindTexture(TextureTarget.Texture2D, beatmap.GetBackgroundTexture());
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(0.0f, 1);
-                    GL.Vertex2(x, y + height / 2 - (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(0.0f, .5f - (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x, y + height / 2 + (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(1.0f, .5f - (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x + width, y + height / 2 + (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(1.0f, .5f + (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x + width, y + height / 2 - (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.End();
-
-                    GL.BindTexture(TextureTarget.Texture2D, BackgroundDimTexture);
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(0, 1);
-                    GL.Vertex2(x, y);
-                    GL.TexCoord2(1, 1);
-                    GL.Vertex2(x + width, y);
-                    GL.TexCoord2(1, 0);
-                    GL.Vertex2(x + width, y + height);
-                    GL.TexCoord2(0, 0);
-                    GL.Vertex2(x, y + height);
-                    GL.End();
+                case (BackgroundImageFitType.MINIMUM_FIT):
+                    if (beatmap.GetBackgroundTextureWidth() * height * windowHeight < beatmap.GetBackgroundTextureHeight() * width * windowWidth)
+                    {
+                        //vertical
+                        float midx = width / 2.0f + x;
+                        float dx = .5f * height * windowHeight / windowWidth * beatmap.GetBackgroundTextureWidth() / beatmap.GetBackgroundTextureHeight();
+                        float midy = height / 2.0f + y;
+                        float dy = height / 2.0f;
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.TexCoord2(0, 1);
+                        GL.Vertex2(midx - dx, midy - dy);
+                        GL.TexCoord2(1, 1);
+                        GL.Vertex2(midx + dx, midy - dy);
+                        GL.TexCoord2(1, 0);
+                        GL.Vertex2(midx + dx, midy + dy);
+                        GL.TexCoord2(0, 0);
+                        GL.Vertex2(midx - dx, midy + dy);
+                        GL.End();
+                    }
+                    else
+                    {
+                        //horizontal
+                        float midx = width / 2.0f + x;
+                        float dx = width / 2.0f;
+                        float midy = height / 2.0f + y;
+                        float dy = .5f * 1.0f / (windowHeight / width / windowWidth * beatmap.GetBackgroundTextureWidth() / beatmap.GetBackgroundTextureHeight());
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.TexCoord2(0, 1);
+                        GL.Vertex2(midx - dx, midy - dy);
+                        GL.TexCoord2(1, 1);
+                        GL.Vertex2(midx + dx, midy - dy);
+                        GL.TexCoord2(1, 0);
+                        GL.Vertex2(midx + dx, midy + dy);
+                        GL.TexCoord2(0, 0);
+                        GL.Vertex2(midx - dx, midy + dy);
+                        GL.End();
+                    }
                     break;
                 case (BackgroundImageFitType.MAXIMUM_FIT)://not done
-                    GL.BindTexture(TextureTarget.Texture2D, beatmap.GetBackgroundTexture());
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(0.0f, 1);
-                    GL.Vertex2(x, y + height / 2 - (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(0.0f, .5f - (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x, y + height / 2 + (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(1.0f, .5f - (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x + width, y + height / 2 + (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.TexCoord2(1.0f, .5f + (height * windowHeight * beatmap.GetBackgroundTextureWidth()) / (width * windowWidth * beatmap.GetBackgroundTextureHeight()));
-                    GL.Vertex2(x + width, y + height / 2 - (width * windowWidth * beatmap.GetBackgroundTextureHeight()) / (windowHeight * beatmap.GetBackgroundTextureWidth()));
-                    GL.End();
-
-                    GL.BindTexture(TextureTarget.Texture2D, BackgroundDimTexture);
-                    GL.Begin(PrimitiveType.Quads);
-
-                    GL.TexCoord2(0, 1);
-                    GL.Vertex2(x, y);
-                    GL.TexCoord2(1, 1);
-                    GL.Vertex2(x + width, y);
-                    GL.TexCoord2(1, 0);
-                    GL.Vertex2(x + width, y + height);
-                    GL.TexCoord2(0, 0);
-                    GL.Vertex2(x, y + height);
-                    GL.End();
+                    if (beatmap.GetBackgroundTextureWidth() * height * windowHeight < beatmap.GetBackgroundTextureHeight() * width * windowWidth)
+                    {
+                        //horizontal
+                        float midx = .5f;
+                        float dx = .5f;
+                        float midy = .5f;
+                        float dy = .5f * height * windowHeight / width / windowWidth * beatmap.GetBackgroundTextureWidth() / beatmap.GetBackgroundTextureHeight();
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.TexCoord2(midx - dx, midy + dy);
+                        GL.Vertex2(x, y);
+                        GL.TexCoord2(midx + dx, midy + dy);
+                        GL.Vertex2(x + width, y);
+                        GL.TexCoord2(midx + dx, midy - dy);
+                        GL.Vertex2(x + width, y + height);
+                        GL.TexCoord2(midx - dx, midy - dy);
+                        GL.Vertex2(x, y + height);
+                        GL.End();
+                    }
+                    else
+                    {
+                        //vertical
+                        float midx = .5f;
+                        float dx = .5f * 1.0f / (height * windowHeight / width / windowWidth * beatmap.GetBackgroundTextureWidth() / beatmap.GetBackgroundTextureHeight());
+                        float midy = .5f;
+                        float dy = .5f;
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.TexCoord2(midx - dx, midy + dy);
+                        GL.Vertex2(x, y);
+                        GL.TexCoord2(midx + dx, midy + dy);
+                        GL.Vertex2(x + width, y);
+                        GL.TexCoord2(midx + dx, midy - dy);
+                        GL.Vertex2(x + width, y + height);
+                        GL.TexCoord2(midx - dx, midy - dy);
+                        GL.Vertex2(x, y + height);
+                        GL.End();
+                    }
                     break;
                 default:
                     break;
             }
+            GL.Enable(EnableCap.Blend);
         }
         public void SetReplay(OsuStandardReplay r, OsuStandardBeatmap b)
         {
             beatmap = b;
         }
-        public void SetTint(byte alpha, Color tint)
+        public void SetTint(float alpha, Color tint)
         {
-            BackgroundDim = alpha;
-            Bitmap bmp = new Bitmap(1, 1);
-            bmp.SetPixel(0, 0, Color.FromArgb(BackgroundDim, tint.R, tint.G, tint.B));
-            int id = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, id);
-            BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-            bmp.UnlockBits(data);
-            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            BackgroundDimTexture = id;
+            Tint = Computation.ColorFromHSL(tint.GetHue(), tint.GetSaturation(), alpha);
+        }
+        public void GenerateBackground(float width, float height, int windowWidth, int windowHeight)
+        {
+
         }
     }
 }
