@@ -558,9 +558,9 @@ namespace OsuSpectate.Beatmap
                 return HitObjectList.ElementAt(i);
             }
         }
-        public TimeSpan GetSliderDuration(TimeSpan time, OsuStandardSlider slider)
+        public TimeSpan GetSliderDuration(OsuStandardSlider slider)
         {
-            
+            TimeSpan time = slider.getStart();
             int index1=0;
             while(TimingPointList.ElementAt(index1).Offset.CompareTo(time)<=0)
             {
@@ -577,6 +577,7 @@ namespace OsuSpectate.Beatmap
                 {break;}
             }
             TimingPoint parent = NonInheritedTimingPointList.ElementAt(index2-1);
+            
             if(!inherited.Inherited)
             {
                 return TimeSpan.FromMilliseconds(slider.pixelLength * slider.repeat / 100.0f * parent.BeatLength.TotalMilliseconds / SliderMultiplier);
@@ -585,7 +586,19 @@ namespace OsuSpectate.Beatmap
                 return TimeSpan.FromMilliseconds(slider.pixelLength * slider.repeat / 100.0f * parent.BeatLength.TotalMilliseconds / SliderMultiplier* (-0.01f * inherited.BeatLength.TotalMilliseconds));
             }
         }
-        
+        public TimeSpan GetBeatLength(TimeSpan time)
+        {
+            int index = 0;
+            while (NonInheritedTimingPointList.ElementAt(index).Offset.CompareTo(time) <= 0)
+            {
+                index++;
+                if (index >= NonInheritedTimingPointList.Count)
+                { break; }
+            }
+            TimingPoint parent = NonInheritedTimingPointList.ElementAt(index - 1);
+            return parent.BeatLength;
+        }
+
         #region getters
         public int GetBackgroundTexture() { return BackgroundTexture; }
         public string GetOsuFileFormat() { return OsuFileFormat; }

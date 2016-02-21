@@ -118,7 +118,7 @@ namespace OsuSpectate.View
     //        Console.WriteLine(GameplayInput.GetRenderList().Count);
             for (int i = GameplayInput.GetRenderList().Count - 1; i >= 0; i--)
             {
-                switch (GameplayInput.GetRenderList().ElementAt(i).GetType())
+                switch (GameplayInput.GetRenderList().ElementAt(i).GetRenderObjectType())
                 {
                     
                     case ("HitCircle"):
@@ -170,7 +170,7 @@ namespace OsuSpectate.View
                     #endregion
                     case ("Slider"):
                         #region
-                        RenderSlider rs = (RenderSlider)GameplayInput.GetRenderList().ElementAt(i);
+                        RenderSliderBorder rs = (RenderSliderBorder)GameplayInput.GetRenderList().ElementAt(i);
                         OsuStandardSlider s = rs.Slider;
                         float opacity = 1.0f;
                         if(s.getStart()>time)
@@ -343,7 +343,7 @@ namespace OsuSpectate.View
             }
             for (int i = GameplayInput.GetRenderList().Count - 1; i >= 0; i--)
             {
-                switch (GameplayInput.GetRenderList().ElementAt(i).GetType())
+                switch (GameplayInput.GetRenderList().ElementAt(i).GetRenderObjectType())
                 {
                     case ("300"):
                         #region

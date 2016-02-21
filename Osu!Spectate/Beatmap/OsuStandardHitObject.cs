@@ -18,6 +18,9 @@ namespace OsuSpectate.Beatmap
         public abstract TimeSpan getStart();
         public abstract TimeSpan getEnd();
         public abstract OsuStandardHitObject flipY();
+        public abstract PointF getStartPosition();
+        public abstract PointF getEndPosition();
+
         public static OsuStandardHitObject getNewHitobject(string[] split, int comboIndex, int comboNumber, OsuStandardBeatmap b, int i)
         {
             int x = Int32.Parse(split[3]);
@@ -76,6 +79,16 @@ namespace OsuSpectate.Beatmap
             OsuStandardHitCircle result = (OsuStandardHitCircle)this.MemberwiseClone();
             result.y = 384.0f - result.y;
             return result;
+        }
+
+        public override PointF getStartPosition()
+        {
+            return new PointF(x, y);
+        }
+
+        public override PointF getEndPosition()
+        {
+            return new PointF(x, y);
         }
     }
     public class OsuStandardSlider : OsuStandardHitObject
@@ -159,7 +172,7 @@ namespace OsuSpectate.Beatmap
         }
         public void updateTiming()
         {
-            endTime = startTime.Add(beatmap.GetSliderDuration(startTime, this));
+            endTime = startTime.Add(beatmap.GetSliderDuration(this));
             
         }
         public override string getType() { return "slider"; }
@@ -179,6 +192,16 @@ namespace OsuSpectate.Beatmap
             result.y = 384 - result.y;
             result.curve = Curve.getCurve(result.sliderType, result.points, result.pixelLength, result.repeat);
             return result;
+        }
+
+        public override PointF getStartPosition()
+        {
+            return curve.pointOnCurve(0);
+        }
+
+        public override PointF getEndPosition()
+        {
+            return curve.pointOnCurve(1);
         }
     }
     public class OsuStandardSpinner : OsuStandardHitObject
@@ -212,6 +235,16 @@ namespace OsuSpectate.Beatmap
         public override OsuStandardHitObject flipY()
         {
             return this;
+        }
+
+        public override PointF getStartPosition()
+        {
+            return new PointF(256, 192);
+        }
+
+        public override PointF getEndPosition()
+        {
+            return new PointF(256, 192);
         }
     }
 }

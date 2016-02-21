@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using OsuSpectate.Beatmap;
+using OsuSpectate.GameplaySource;
 using ReplayAPI;
 
 namespace OsuSpectate.GameplayEngine
@@ -18,11 +19,13 @@ namespace OsuSpectate.GameplayEngine
         List<RenderObject> renderList;
         OsuStandardBeatmap beatmap;
         Mods activeMods;
+        OsuStandardGameplayInput gameplayInput;
 
-        public OsuStandardGameplayEngine(OsuStandardBeatmap b, Mods m)
+        public OsuStandardGameplayEngine(OsuStandardGameplayInput gi)
         {
-            beatmap = b;
-            activeMods = m;
+            gameplayInput = gi;
+            beatmap = gi.GetBeatmap();
+            activeMods = gi.GetMods();
             eventList = new Tree<GameplayEvent>();
             gameplayFrames = new Tree<OsuStandardGameplayFrame>();
             gameplayFrames.Add(new OsuStandardGameplayFrame(TimeSpan.Zero));
@@ -41,6 +44,7 @@ namespace OsuSpectate.GameplayEngine
                     case ("slider"):
                         //beatmap.GenerateSliderTexture((OsuStandardSlider)ho,getMods());
                         new RenderSliderBeginEvent((OsuStandardSlider)ho, eventList, renderList, this);
+                        new GameplaySlider((OsuStandardSlider)ho, this, objectList, renderList, eventList);
                         break;
 
                 }
@@ -111,8 +115,10 @@ namespace OsuSpectate.GameplayEngine
         {
             return beatmap;
         }
-
-
+        public ReplayFrame getReplayFrame(TimeSpan t)
+        {
+            return gameplayInput.GetReplayFrame(t);
+        }
     }
     public class Tree<T> : IEnumerable<T> where T : IComparable<T>
     {
