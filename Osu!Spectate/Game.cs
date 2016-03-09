@@ -25,8 +25,11 @@ namespace OsuSpectate
         AudioPlayer Audio;
         OsuStandardBeatmap Beatmap;
         Stopwatch timer = new Stopwatch();
-        // + TimeSpan.FromSeconds(155)
-        TimeSpan offset = TimeSpan.FromSeconds(86+1000) + TimeSpan.FromSeconds(24);
+        //
+        //
+        //TimeSpan offset = TimeSpan.FromSeconds(86) + TimeSpan.FromSeconds(24) + TimeSpan.FromSeconds(155);
+        TimeSpan offset = TimeSpan.Zero;
+        float rate = 1.0f;
         public Game(int w, int h)
             : base(w, h)
         {
@@ -57,7 +60,7 @@ namespace OsuSpectate
             MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
             //MyArrangement.Views.Add(new ViewContainer(-1.0f + 2.0f / 3, -1.0f, 2.0f / 3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
             //MyArrangement.Views.Add(new ViewContainer(-1.0f+ 4.0f / 3, -1.0f, 2.0f/3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio)));
-            Audio = new AudioPlayer(GameplayInputList[0]);
+            Audio = new AudioPlayer(GameplayInputList[0],rate);
             timer.Start();
             //VSync = VSyncMode.Off;
             //WindowState = WindowState.Fullscreen;
@@ -79,9 +82,9 @@ namespace OsuSpectate
             GL.ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             for (int i=0;i<GameplayInputList.Count;i++)
             {
-                GameplayInputList.ElementAt(i).HandleUntil(TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds * 3.0).Add(offset));
+                GameplayInputList.ElementAt(i).HandleUntil(TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds * rate).Add(offset));
             }
-            MyArrangement.Draw(TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds * 3.0).Add(offset), Width,Height);
+            MyArrangement.Draw(TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds * rate).Add(offset), Width,Height);
 
             SwapBuffers();
 

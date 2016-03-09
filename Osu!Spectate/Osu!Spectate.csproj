@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\AudioPlayer.cs" />
+    <Compile Include="Audio\SoundTouchSharp.cs" />
     <Compile Include="Beatmap\Curve.cs" />
     <Compile Include="Beatmap\OsuStandardBeatmap.cs" />
     <Compile Include="Beatmap\OsuStandardHitObject.cs" />
@@ -1594,6 +1595,14 @@
     <EmbeddedResource Include="Resources\osu!Default Skin\taikohitcircleoverlay.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SoundTouch.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

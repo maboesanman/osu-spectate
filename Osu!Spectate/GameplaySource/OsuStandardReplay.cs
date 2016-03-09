@@ -144,7 +144,7 @@ namespace OsuSpectate.GameplaySource
                 KeyPrevious = ReplayFrameIndexKeys[index - 1];
                 KeyNext = ReplayFrameIndexKeys[Math.Min(index, ReplayFrameIndexKeys.Count - 1)];
             }
-            return ReplayFrames[ReplayFrameIndex[KeyPrevious]];
+            //return ReplayFrames[ReplayFrameIndex[KeyNext]];
             if (KeyNext == KeyPrevious)
             {
                 ReplayFrame frame;
