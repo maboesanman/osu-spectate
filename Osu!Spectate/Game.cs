@@ -97,6 +97,12 @@ namespace OsuSpectate
         {
             base.OnResize(e);
             GL.Viewport(0, 0, Width, Height);
+            OnRenderFrame(new FrameEventArgs());//may delete this in the future
+        }
+        protected override void OnMove(EventArgs e)
+        {
+            base.OnMove(e);
+            OnRenderFrame(new FrameEventArgs());//may delete this in the future
         }
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
