@@ -29,7 +29,7 @@ namespace OsuSpectate
         //
         //TimeSpan offset = TimeSpan.FromSeconds(86) + TimeSpan.FromSeconds(24) + TimeSpan.FromSeconds(155);
         TimeSpan offset = TimeSpan.Zero;
-        float rate = 1.0f;
+        float rate = 1.5f;
         public Game(int w, int h)
             : base(w, h)
         {
@@ -47,17 +47,31 @@ namespace OsuSpectate
 
             OsuSkin Skin = new OsuSkin(@"C:\Program Files (x86)\osu!\Skins\Aesthetic\", true);
             //OsuSkin Skin = new OsuSkin(@"\\", true);
-            Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\93523 Tatsh - IMAGE -MATERIAL- Version 0\Tatsh - IMAGE -MATERIAL- Version 0 (Scorpiour) [Scorpiour].osu");
-            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\-GN - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2015-12-20) Osu.osr", Beatmap, true));
-            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\cptnXn - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2014-05-11) Osu.osr", Beatmap, true));
-            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2016-01-18) Osu.osr", Beatmap, true));
-
-            //Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\203309 Ni-Sokkususu - Shukusai no Elementalia\Ni-Sokkususu - Shukusai no Elementalia (Silynn) [Kneesocks].osu");
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - Tatsh - IMAGE -MATERIAL- Version 0 [Scorpiour] (2015-12-08) Osu.osr", Beatmap, true));
-
+            Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\53857 Saiya - Remote Control\Saiya - Remote Control (Garven) [Insane].osu");
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\hvick225 - Saiya - Remote Control [Insane] (2014-08-17) Osu.osr", Beatmap, true));
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\rrtyui - Saiya - Remote Control [Insane] (2015-03-06) Osu.osr", Beatmap, true));
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Rafis - Saiya - Remote Control [Insane] (2015-12-27) Osu.osr", Beatmap, true));
+            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - Saiya - Remote Control [Insane] (2015-12-31) Osu.osr", Beatmap, true));
 
             MyArrangement.Views.Add(new ViewContainer(-1f, -1f, 2f, 2f, new SongBackgroundView(Beatmap, .8f, Color.Black, BackgroundImageFitType.MAXIMUM_FIT)));
-            MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 2.0f, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
+
+            OsuStandardBalancedMultiView multiview = new OsuStandardBalancedMultiView();
+
+            MyArrangement.Views.Add(new ViewContainer(-1f, -1f, 2f, 2f, multiview));
+
+            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio));
+            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio));
+            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio));
+            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio));
+            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio));
+            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[3], Skin, Audio));
+            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[3], Skin, Audio));
+
+
+            //MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 1.0f, 1.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
+            //MyArrangement.Views.Add(new ViewContainer(0.0f, -1.0f, 1.0f, 1.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
+            //MyArrangement.Views.Add(new ViewContainer(-1.0f, 0.0f, 1.0f, 1.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio)));
+            //MyArrangement.Views.Add(new ViewContainer(0.0f, 0.0f, 1.0f, 1.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[3], Skin, Audio)));
             //MyArrangement.Views.Add(new ViewContainer(-1.0f + 2.0f / 3, -1.0f, 2.0f / 3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
             //MyArrangement.Views.Add(new ViewContainer(-1.0f+ 4.0f / 3, -1.0f, 2.0f/3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio)));
             Audio = new AudioPlayer(GameplayInputList[0],rate);

@@ -77,6 +77,7 @@
     <Compile Include="test.cs" />
     <Compile Include="View\BackgroundImageFitType.cs" />
     <Compile Include="View\CurrentTimeView.cs" />
+    <Compile Include="View\OsuStandardBalancedMultiView.cs" />
     <Compile Include="View\OsuStandardGameplayView.cs" />
     <Compile Include="View\SongBackgroundView.cs" />
     <Compile Include="View\SongProgressView.cs" />
