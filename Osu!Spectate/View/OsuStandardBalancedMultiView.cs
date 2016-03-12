@@ -9,15 +9,20 @@ namespace OsuSpectate.View
     class OsuStandardBalancedMultiView : View
     {
         public List<OsuStandardGameplayView> views;
-        public Boolean centerHorizontal = true;
+        public bool centerHorizontal = true;
+        public bool flipViews = false;
+        public bool stretchViews = false;
         int gridWidth=2;
         int gridHeight=2;
         float currentHeight = 0;
         float currentWidth = 0;
 
-        public OsuStandardBalancedMultiView()
+        public OsuStandardBalancedMultiView(bool centerH, bool stretch, bool flip)
         {
             views = new List<OsuStandardGameplayView>();
+            centerHorizontal = centerH;
+            flipViews = flip;
+            stretchViews = stretch;
         }
 
         public void Draw(TimeSpan time, float x, float y, float width, float height, int windowWidth, int windowHeight)
@@ -63,7 +68,7 @@ namespace OsuSpectate.View
                 }
                 for(int j=0;j<gridWidth*gridHeight-views.Count;j++)
                 {
-                    if(rowCounts[0]==rowCounts[gridHeight-1])
+                    if((rowCounts[0]==rowCounts[gridHeight-1])^flipViews)
                     {
                         rowCounts[0]--;
                     }
@@ -78,16 +83,49 @@ namespace OsuSpectate.View
                     float shiftX = (gridWidth - rowCounts[relativeY]) * .5f;
                     for (int relativeX = 0; relativeX < rowCounts[relativeY]; relativeX++)
                     {
-                        views.ElementAt(i++).Draw(time, x + (relativeX + shiftX) * width / gridWidth, y + (gridHeight-1-relativeY) * height / gridHeight, width / gridWidth, height / gridHeight, windowWidth, windowHeight);
+                        if (!stretchViews)
+                        {
+                            views.ElementAt(i++).Draw(time, x + (relativeX + shiftX) * width / gridWidth, y + (gridHeight - 1 - relativeY) * height / gridHeight, width / gridWidth, height / gridHeight, windowWidth, windowHeight);
+                        }
+                        else
+                        {
+                            views.ElementAt(i++).Draw(time, x + relativeX * width / rowCounts[relativeY], y + (gridHeight - 1 - relativeY) * height / gridHeight, width / rowCounts[relativeY], height / gridHeight, windowWidth, windowHeight);
+                        }
                     }
                 }
             } else
             {
-                for (int i = 0; i < views.Count; i++)
+                int[] colCounts = new int[gridWidth];
+                for (int j = 0; j < gridWidth; j++)
                 {
-                    int relativeX = i % gridWidth;
-                    int relativeY = i / gridWidth;
-                    views.ElementAt(i).Draw(time, x + relativeX * width / gridWidth, y + relativeY * height / gridHeight, width / gridWidth, height / gridHeight, windowWidth, windowHeight);
+                    colCounts[j] = gridHeight;
+                }
+                for (int j = 0; j < gridWidth * gridHeight - views.Count; j++)
+                {
+                    if ((colCounts[0] == colCounts[gridWidth - 1])^flipViews)
+                    {
+                        colCounts[0]--;
+                    }
+                    else
+                    {
+                        colCounts[gridWidth - 1]--;
+                    }
+                }
+                int i = 0;
+                for (int relativeX = 0; relativeX < gridWidth; relativeX++)
+                {
+                    float shiftY = (gridHeight - colCounts[relativeX]) * .5f;
+                    for (int relativeY = 0; relativeY < colCounts[relativeX]; relativeY++)
+                    {
+                        if (!stretchViews)
+                        {
+                            views.ElementAt(i++).Draw(time, x + (relativeX) * width / gridWidth, y + (gridHeight - 1 - (relativeY + shiftY)) * height / gridHeight, width / gridWidth, height / gridHeight, windowWidth, windowHeight);
+                        }
+                        else
+                        {
+                            views.ElementAt(i++).Draw(time, x + (relativeX) * width / gridWidth, y + (colCounts[relativeX] - 1 - (relativeY)) * height / colCounts[relativeX], width / gridWidth, height / colCounts[relativeX], windowWidth, windowHeight);
+                        }
+                    }
                 }
             }
         }
