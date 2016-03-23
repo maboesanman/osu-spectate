@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using NAudio.Wave;
 using OsuSpectate.GameplaySource;
 
+using OsuSpectate.Beatmap;
+
 using BigMansStuff.PracticeSharp.SoundTouch;
 
 namespace OsuSpectate.Audio
@@ -19,7 +21,7 @@ namespace OsuSpectate.Audio
         public AudioPlayer(OsuStandardGameplayInput input, float rate)
         {
             DisposeWave();
-            MusicInStream = new NAudio.Wave.BlockAlignReductionStream(NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(new NAudio.Wave.Mp3FileReader(input.GetBeatmap().GetAudioFilePath())));
+            MusicInStream = new NAudio.Wave.BlockAlignReductionStream(NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(new NAudio.Wave.Mp3FileReader(((OsuStandardBeatmap)(input.GetBeatmapManager().GetBeatmap())).GetAudioFilePath())));
             output = new NAudio.Wave.DirectSoundOut();
             output.Init(new TimeStretchWaveProvider(MusicInStream.ToSampleProvider(),rate));
             output.Play();

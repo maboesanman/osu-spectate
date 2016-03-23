@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 using OsuSpectate.Beatmap;
 using OsuSpectate.GameplaySource;
 using OsuSpectate.GameplayEngine;
-using ReplayAPI;
+using osuElements.Helpers;
+using osuElements.Replays;
+using osuElements.Beatmaps;
+using osuElements;
 
 using System.Drawing;
 
@@ -78,7 +81,7 @@ namespace OsuSpectate.GameplayEngine
     }
     public class ReplayReleaseEvent : GameplayEvent
     {
-        Keys keys;
+        ReplayKeys keys;
         float x;
         float y;
         public ReplayReleaseEvent(ReplayFrame frame)
@@ -118,14 +121,15 @@ namespace OsuSpectate.GameplayEngine
         }
         public override void _handle()
         {
+            
             //Console.WriteLine(Frame.Time + " " + Frame.Keys);
             foreach (GameplayObject o in GameplayList)
             {
                 switch(o.GetType())
                 {
                     case ("hitcircle"):
-                        OsuStandardHitCircle c = ((GameplayHitCircle)o).circle;
-                        if ((Frame.X - c.x) * (Frame.X - c.x) + (Frame.Y - c.y) * (Frame.Y - c.y) < Engine.GetCSRadius() * Engine.GetCSRadius()) 
+                        HitCircle c = ((GameplayHitCircle)o).circle;
+                        if (Frame.Position.Distance(c.StartPosition) < Engine.GetCSRadius())
                         {
                             if(Math.Abs(Frame.Time- o.GetTime().TotalMilliseconds)< Engine.GetOD300Milliseconds().TotalMilliseconds)
                             {
@@ -157,8 +161,8 @@ namespace OsuSpectate.GameplayEngine
                         }
                         break;
                     case ("slider"):
-                        OsuStandardSlider s = ((GameplaySlider)o).slider;
-                        if ((Frame.X - s.x) * (Frame.X - s.x) + (Frame.Y - s.y) * (Frame.Y - s.y) < Engine.GetCSRadius() * Engine.GetCSRadius())
+                        Slider s = ((GameplaySlider)o).slider;
+                        if (Frame.Position.Distance(s.StartPosition) < Engine.GetCSRadius())
                         {
                             ((GameplaySlider)o).items.Add(true);
                             ((GameplaySlider)o).headEnd.kill();
@@ -222,7 +226,7 @@ namespace OsuSpectate.GameplayEngine
         Tree<GameplayObject> GameplayList;
         GameplaySlider GS;
         public SliderHeadBeginEvent(GameplaySlider gs, Tree<GameplayObject> gameplayList)
-            : base(gs.slider.getStart().Subtract(gs.engine.GetOD50Milliseconds()))
+            : base(TimeSpan.FromMilliseconds(gs.slider.StartTime).Subtract(gs.engine.GetOD50Milliseconds()))
         {
             GS = gs;
             GameplayList = gameplayList;
@@ -241,7 +245,7 @@ namespace OsuSpectate.GameplayEngine
         Tree<GameplayEvent> EventList;
         GameplaySlider GS;
         public SliderHeadEndEvent(GameplaySlider gs, Tree<GameplayObject> gameplayList, Tree<GameplayEvent> eventList)
-            : base(gs.slider.getStart().Add(gs.engine.GetOD50Milliseconds()))
+            : base(TimeSpan.FromMilliseconds(gs.slider.StartTime).Add(gs.engine.GetOD50Milliseconds()))
         {
             GS = gs;
             GameplayList = gameplayList;
@@ -261,18 +265,18 @@ namespace OsuSpectate.GameplayEngine
     public class SliderTickEvent : GameplayEvent
     {
         GameplaySlider GS;
-        float position;
+        Position position;
         public SliderTickEvent(GameplaySlider gs, float p)
-            : base(gs.slider.getStart().Add(TimeSpan.FromMilliseconds(p*(gs.slider.getEnd()-gs.slider.getStart()).TotalMilliseconds)))
+            : base(TimeSpan.FromMilliseconds(gs.slider.StartTime).Add(TimeSpan.FromMilliseconds(p*gs.slider.Duration)))
         {
             GS = gs;
-            position = p;
+            position = gs.slider.PositionAt(p);
         }
         public override void _handle()
         {
             ReplayFrame f = GS.engine.getReplayFrame(getTime());
-            PointF p = GS.slider.curve.pointOnCurve(position);
-            if (Math.Sqrt((f.X - p.X) * (f.X - p.X) + (f.Y - p.Y) * (f.Y - p.Y)) < 3.0f * GS.engine.GetCSRadius() & f.Keys!=Keys.None)
+            ;
+            if (f.Position.Distance(position) < 3.0f * GS.engine.GetCSRadius() & f.Keys!=ReplayKeys.None)
             {
                 //success
                 GS.items.Add(true);
@@ -295,7 +299,7 @@ namespace OsuSpectate.GameplayEngine
         GameplaySlider GS;
         Tree<GameplayEvent> EventList;
         public SliderTailEvent(GameplaySlider gs, Tree<GameplayEvent> eventList)
-            : base(gs.slider.getEnd())
+            : base(TimeSpan.FromMilliseconds(gs.slider.EndTime))
         {
             GS = gs;
             EventList = eventList;
@@ -304,9 +308,9 @@ namespace OsuSpectate.GameplayEngine
         {
 
             
-            ReplayFrame f = GS.engine.getReplayFrame(GS.slider.getEnd());
-            PointF p = GS.slider.getEndPosition();
-            if (Math.Sqrt((f.X - p.X) * (f.X - p.X) + (f.Y - p.Y) * (f.Y - p.Y)) < 3.0f*GS.engine.GetCSRadius()& f.Keys != Keys.None)
+            ReplayFrame f = GS.engine.getReplayFrame(TimeSpan.FromMilliseconds(GS.slider.EndTime));
+            Position p = GS.slider.EndPosition;
+            if (f.Position.Distance(p) < 3.0f*GS.engine.GetCSRadius()& f.Keys != ReplayKeys.None)
             {
                 //success
                 GS.items.Add(true);
@@ -382,7 +386,7 @@ namespace OsuSpectate.GameplayEngine
     public class RenderHitCircleBeginEvent : GameplayEvent
     {
         List<RenderObject> RenderList;
-        OsuStandardHitCircle Circle;
+        HitCircle Circle;
         RenderHitCircle Render;
         OsuStandardGameplayEngine GameplayEngine;
         public RenderHitCircleBeginEvent(RenderHitCircle rc, List<RenderObject> renderList)
@@ -442,11 +446,11 @@ namespace OsuSpectate.GameplayEngine
     {
         Tree<GameplayEvent> Parent;
         List<RenderObject> RenderList;
-        OsuStandardSlider Slider;
+        Slider Slider;
         RenderSliderBorder Render;
         
-        public RenderSliderBeginEvent(OsuStandardSlider slider, Tree<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardGameplayEngine engine)
-            : base(slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(engine.getMods())))
+        public RenderSliderBeginEvent(Slider slider, Tree<GameplayEvent> parent, List<RenderObject> renderList, OsuStandardGameplayEngine engine)
+            : base(TimeSpan.FromMilliseconds(slider.StartTime).Subtract(engine.GetARMilliseconds()))
         {
             Parent = parent;
             Slider = slider;
@@ -454,7 +458,7 @@ namespace OsuSpectate.GameplayEngine
             RenderList = renderList;
             Parent.Add(this);
             
-            Parent.Add(new RenderSliderDrawEvent((slider.getStart().Subtract(slider.getBeatmap().GetARMilliseconds(engine.getMods()))).Subtract(TimeSpan.FromMilliseconds(slider.pixelLength*10.0f)),Parent, Render));
+            Parent.Add(new RenderSliderDrawEvent(TimeSpan.FromMilliseconds(slider.StartTime).Subtract(engine.GetARMilliseconds()).Subtract(TimeSpan.FromMilliseconds(slider.Length*10.0f)),Parent, Render));
             
             
         }
@@ -473,8 +477,8 @@ namespace OsuSpectate.GameplayEngine
         Tree<GameplayEvent> Parent;
         List<RenderObject> RenderList;
         RenderSliderBorder Render;
-        public RenderSliderEndEvent(OsuStandardSlider slider, RenderSliderBorder render, Tree<GameplayEvent> parent, List<RenderObject> renderList)
-            : base(slider.getEnd())
+        public RenderSliderEndEvent(Slider slider, RenderSliderBorder render, Tree<GameplayEvent> parent, List<RenderObject> renderList)
+            : base(TimeSpan.FromMilliseconds(slider.EndTime))
         {
             Parent = parent;
             RenderList = renderList;

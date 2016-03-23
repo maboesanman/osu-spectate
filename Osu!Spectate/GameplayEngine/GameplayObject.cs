@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using OsuSpectate.Beatmap;
 using OsuSpectate.GameplaySource;
+
+using osuElements.Beatmaps;
 
 namespace OsuSpectate.GameplayEngine
 {
@@ -25,11 +26,11 @@ namespace OsuSpectate.GameplayEngine
         public OsuStandardGameplayEngine engine;
         public HitCircleEndEvent endEvent;
         public RenderHitCircleEndEvent renderEndEvent;
-        public OsuStandardHitCircle circle;
-        public GameplayHitCircle(OsuStandardHitCircle c, OsuStandardGameplayEngine e, Tree<GameplayObject> gl, List<RenderObject> rl, Tree<GameplayEvent> el)
+        public HitCircle circle;
+        public GameplayHitCircle(HitCircle c, OsuStandardGameplayEngine e, Tree<GameplayObject> gl, List<RenderObject> rl, Tree<GameplayEvent> el)
         {
             circle = c;
-            time = c.getStart();
+            time = TimeSpan.FromMilliseconds(c.StartTime);
             engine = e;
 
             RenderHitCircle render = new RenderHitCircle(c, e);
@@ -65,37 +66,38 @@ namespace OsuSpectate.GameplayEngine
     {
         public TimeSpan time;
         public OsuStandardGameplayEngine engine;
-        public OsuStandardSlider slider;
+        public Slider slider;
         public List<bool> items;
 
         public SliderHeadEndEvent headEnd;
-        public GameplaySlider(OsuStandardSlider s, OsuStandardGameplayEngine e, Tree<GameplayObject> gl, List<RenderObject> rl, Tree<GameplayEvent> el)
+        public GameplaySlider(Slider s, OsuStandardGameplayEngine e, Tree<GameplayObject> gl, List<RenderObject> rl, Tree<GameplayEvent> el)
         {
             slider = s;
-            time = s.getStart();
+            time = TimeSpan.FromMilliseconds(s.StartTime);
             engine = e;
 
             RenderSliderBorder renderBorder = new RenderSliderBorder(slider, engine);
             RenderSliderHead renderHead = new RenderSliderHead(slider, engine);
             RenderSliderTail renderTail = new RenderSliderTail(slider, engine);
-            float beatLength = (float)e.getBeatmap().GetBeatLength(s.getStart()).TotalMilliseconds;
-            float tickRate = e.getBeatmap().GetSliderTickRate();
-            float duration = (float)(slider.getEnd() - slider.getStart()).TotalMilliseconds;
+            
+            float beatLength = (float)(e.getBeatmap().GetBeatLength(TimeSpan.FromMilliseconds(slider.StartTime)).TotalMilliseconds);
+            float tickRate = e.getBeatmap().SliderTickRate;
+            float duration = slider.Duration;
             items = new List<bool>();
             el.Add(new SliderHeadBeginEvent(this, gl));
             headEnd = new SliderHeadEndEvent(this, gl, el);
             el.Add(headEnd);
             for(float x = beatLength/tickRate; x< duration;x+= beatLength / tickRate)
             {
-                if (x % (duration / slider.repeat) != 0)
+                if (x % (duration / slider.SegmentCount) != 0)
                 {
                     el.Add(new SliderTickEvent(this, x / duration));
                 }
                 //new slider tick at x/duration
             }
-            for(float x=1;x<slider.repeat;x++)
+            for(float x=1;x<slider.SegmentCount;x++)
             {
-                el.Add(new SliderTickEvent(this, 1.0f / slider.repeat * x));
+                el.Add(new SliderTickEvent(this, 1.0f / slider.SegmentCount * x));
             }
             el.Add(new SliderTailEvent(this, el));
             /*

@@ -13,7 +13,10 @@ using System.Drawing.Drawing2D;
 
 using OsuSpectate.GameplaySource;
 using OsuSpectate.Beatmap;
-using ReplayAPI;
+
+using osuElements.Beatmaps;
+using osuElements;
+
 
 namespace OsuSpectate.GameplayEngine
 {
@@ -25,12 +28,12 @@ namespace OsuSpectate.GameplayEngine
     
     public class RenderHitCircle : RenderObject
     {
-        public OsuStandardHitCircle HitCircle;
+        public HitCircle BaseHitCircle;
         public OsuStandardGameplayEngine GameplayEngine;
         private bool Initialized;
-        public RenderHitCircle(OsuStandardHitCircle c, OsuStandardGameplayEngine e)
+        public RenderHitCircle(HitCircle c, OsuStandardGameplayEngine e)
         {
-            HitCircle = c;
+            BaseHitCircle = c;
             GameplayEngine = e;
         }
         public string GetRenderObjectType()
@@ -39,11 +42,11 @@ namespace OsuSpectate.GameplayEngine
         }
         public TimeSpan GetStartTime()
         {
-            return HitCircle.getStart().Subtract(GameplayEngine.GetARMilliseconds());
+            return TimeSpan.FromMilliseconds(BaseHitCircle.StartTime).Subtract(GameplayEngine.GetARMilliseconds());
         }
         public TimeSpan GetEndTime()
         {
-            return HitCircle.getStart().Add(GameplayEngine.GetOD50Milliseconds());
+            return TimeSpan.FromMilliseconds(BaseHitCircle.StartTime).Add(GameplayEngine.GetOD50Milliseconds());
         }
 
         public void Draw(TimeSpan time, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
@@ -53,18 +56,18 @@ namespace OsuSpectate.GameplayEngine
     }
     public class RenderSliderBorder : RenderObject
     {
-        public OsuStandardSlider Slider;
+        public Slider BaseSlider;
         public OsuStandardGameplayEngine GameplayEngine;
-        public Nullable<int> SliderBorderTexture;
+        public TextureContainer SliderBorderTexture;
         private bool Initialized;
-        public RenderSliderBorder(OsuStandardSlider s, OsuStandardGameplayEngine e)
+        public RenderSliderBorder(Slider s, OsuStandardGameplayEngine e)
         {
             GameplayEngine = e;
-            Slider = s;
+            BaseSlider = s;
         }
         public void computeTexture()
         {
-            SliderBorderTexture = Slider.beatmap.GetSliderTexture(Slider, GameplayEngine.getMods());
+            SliderBorderTexture = GameplayEngine.getBeatmap().GetSliderTexture(BaseSlider, GameplayEngine.getMods());
         }
         public string GetRenderObjectType()
         {
@@ -76,11 +79,11 @@ namespace OsuSpectate.GameplayEngine
         }
         public TimeSpan GetStartTime()
         {
-            return Slider.getStart().Subtract(GameplayEngine.GetARMilliseconds());
+            return TimeSpan.FromMilliseconds(BaseSlider.StartTime).Subtract(GameplayEngine.GetARMilliseconds());
         }
         public TimeSpan GetEndTime()
         {
-            return Slider.getEnd().Add(GameplayEngine.GetOD50Milliseconds());
+            return TimeSpan.FromMilliseconds(BaseSlider.EndTime).Add(GameplayEngine.GetOD50Milliseconds());
         }
         public void Draw(TimeSpan time, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
         {
@@ -89,13 +92,13 @@ namespace OsuSpectate.GameplayEngine
     }
     public class RenderSliderHead : RenderObject
     {
-        public OsuStandardSlider Slider;
+        public Slider BaseSlider;
         public OsuStandardGameplayEngine GameplayEngine;
         private bool Initialized;
-        public RenderSliderHead(OsuStandardSlider s, OsuStandardGameplayEngine e)
+        public RenderSliderHead(Slider s, OsuStandardGameplayEngine e)
         {
             GameplayEngine = e;
-            Slider = s;
+            BaseSlider = s;
         }
         public string GetRenderObjectType()
         {
@@ -103,11 +106,11 @@ namespace OsuSpectate.GameplayEngine
         }
         public TimeSpan GetStartTime()
         {
-            return Slider.getStart().Subtract(GameplayEngine.GetARMilliseconds());
+            return TimeSpan.FromMilliseconds(BaseSlider.StartTime).Subtract(GameplayEngine.GetARMilliseconds());
         }
         public TimeSpan GetEndTime()
         {
-            return Slider.getStart();
+            return TimeSpan.FromMilliseconds(BaseSlider.StartTime);
         }
         public void Draw(TimeSpan time, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
         {
@@ -116,18 +119,19 @@ namespace OsuSpectate.GameplayEngine
     }
     public class RenderSliderTick : RenderObject
     {
-        public OsuStandardSlider Slider;
+        public Slider BaseSlider;
         public OsuStandardGameplayEngine GameplayEngine;
-        public Nullable<int> SliderBorderTexture;
+        public int? SliderBorderTexture;
         private bool Initialized;
         private PointF Position;
         private TimeSpan Time;
-        public RenderSliderTick(OsuStandardSlider s, float position, OsuStandardGameplayEngine e)
+        public RenderSliderTick(Slider s, float time, OsuStandardGameplayEngine e)
         {
             GameplayEngine = e;
-            Slider = s;
-            Position = s.curve.pointOnCurve(position);
-            Time = TimeSpan.FromTicks((long)(s.getBeatmap().GetSliderDuration(s).Ticks*position));
+            BaseSlider = s;
+            osuElements.Position p = s.PositionAtTime(time);
+            Position = new PointF(p.XForHitobject,p.YForHitobject);
+            Time = TimeSpan.FromMilliseconds( s.StartTime+time);
         }
         public string GetRenderObjectType()
         {
@@ -139,7 +143,7 @@ namespace OsuSpectate.GameplayEngine
         }
         public TimeSpan GetEndTime()
         {
-            return Slider.getEnd();
+            return TimeSpan.FromMilliseconds(BaseSlider.EndTime);
         }
         public void Draw(TimeSpan time, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
         {
@@ -148,15 +152,15 @@ namespace OsuSpectate.GameplayEngine
     }
     public class RenderSliderTail : RenderObject
     {
-        public OsuStandardSlider Slider;
+        public Slider BaseSlider;
         public OsuStandardGameplayEngine GameplayEngine;
         public Nullable<int> SliderBorderTexture;
         private bool Initialized;
         private PointF Position;
-        public RenderSliderTail(OsuStandardSlider s, OsuStandardGameplayEngine e)
+        public RenderSliderTail(Slider s, OsuStandardGameplayEngine e)
         {
             GameplayEngine = e;
-            Slider = s;
+            BaseSlider = s;
         }
         public string GetRenderObjectType()
         {
@@ -164,11 +168,11 @@ namespace OsuSpectate.GameplayEngine
         }
         public TimeSpan GetStartTime()
         {
-            return Slider.getStart()- GameplayEngine.GetARMilliseconds();
+            return TimeSpan.FromMilliseconds(BaseSlider.StartTime)- GameplayEngine.GetARMilliseconds();
         }
         public TimeSpan GetEndTime()
         {
-            return Slider.getEnd();
+            return TimeSpan.FromMilliseconds(BaseSlider.EndTime);
         }
         public void Draw(TimeSpan time, float OriginX, float OriginY, float width, float height, int windowWidth, int windowHeight)
         {
@@ -177,8 +181,7 @@ namespace OsuSpectate.GameplayEngine
     }
     public class RenderSpinner : RenderObject
     {
-        public OsuStandardSpinner Spinner;
-        public int SliderBorderTexture;
+        public Spinner BaseSpinner;
         private bool Initialized;
         public void Initialize(float x, float y, float width, float height, int windowWidth, int windowHeight)
         {
@@ -197,15 +200,16 @@ namespace OsuSpectate.GameplayEngine
     public class Render300 : RenderObject
     {
         public TimeSpan time;
-        public float X;
-        public float Y;
+        public Position position;
         private bool Initialized;
-        public Render300(OsuStandardHitObject c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
+        public Render300(HitObject c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
         {
-            time = c.getEnd();
-            PointF p = c.getEndPosition();
-            X = p.X;
-            Y = p.Y;
+            time = TimeSpan.FromMilliseconds(c.EndTime);
+            position = c.EndPosition;
+            if (c.Type == osuElements.Helpers.HitObjectType.Slider)
+            {
+                position = ((Slider)c).PositionAtTime(c.EndTime);
+            }
             eventList.Add(new Render300EndEvent(this, renderList));
             eventList.Add(new Render300BeginEvent(this, renderList));
         }
@@ -229,15 +233,16 @@ namespace OsuSpectate.GameplayEngine
     public class Render100 : RenderObject
     {
         public TimeSpan time;
-        public float X;
-        public float Y;
+        public Position position;
         private bool Initialized;
-        public Render100(OsuStandardHitObject c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
+        public Render100(HitObject c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
         {
-            time = c.getEnd();
-            PointF p = c.getEndPosition();
-            X = p.X;
-            Y = p.Y;
+            time = TimeSpan.FromMilliseconds(c.EndTime);
+            position = c.EndPosition;
+            if (c.Type == osuElements.Helpers.HitObjectType.Slider)
+            {
+                position = ((Slider)c).PositionAtTime(c.EndTime);
+            }
             eventList.Add(new Render100EndEvent(this, renderList));
             eventList.Add(new Render100BeginEvent(this, renderList));
         }
@@ -261,15 +266,16 @@ namespace OsuSpectate.GameplayEngine
     public class Render50 : RenderObject
     {
         public TimeSpan time;
-        public float X;
-        public float Y;
+        public Position position;
         private bool Initialized;
-        public Render50(OsuStandardHitObject c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
+        public Render50(HitObject c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
         {
-            time = c.getEnd();
-            PointF p = c.getEndPosition();
-            X = p.X;
-            Y = p.Y;
+            time = TimeSpan.FromMilliseconds(c.EndTime);
+            position = c.EndPosition;
+            if (c.Type == osuElements.Helpers.HitObjectType.Slider)
+            {
+                position = ((Slider)c).PositionAtTime(c.EndTime);
+            }
             eventList.Add(new Render50EndEvent(this, renderList));
             eventList.Add(new Render50BeginEvent(this, renderList));
         }
@@ -293,15 +299,16 @@ namespace OsuSpectate.GameplayEngine
     public class RenderMiss : RenderObject
     {
         public TimeSpan time;
-        public float X;
-        public float Y;
+        public Position position;
         private bool Initialized;
-        public RenderMiss(OsuStandardHitObject c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
+        public RenderMiss(HitObject c, List<RenderObject> renderList, Tree<GameplayEvent> eventList)
         {
-            time = c.getEnd();
-            PointF p = c.getEndPosition();
-            X = p.X;
-            Y = p.Y;
+            time = TimeSpan.FromMilliseconds(c.EndTime);
+            position = c.EndPosition;
+            if (c.Type == osuElements.Helpers.HitObjectType.Slider)
+            {
+                position = ((Slider)c).PositionAtTime(c.EndTime);
+            }
             eventList.Add(new RenderMissEndEvent(this, renderList));
             eventList.Add(new RenderMissBeginEvent(this, renderList));
         }

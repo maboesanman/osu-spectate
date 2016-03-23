@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel;
 
-using ReplayAPI;
+using osuElements.Replays;
+using osuElements.Helpers;
+using osuElements.Beatmaps;
 
 using OsuSpectate.Beatmap;
 using OsuSpectate.GameplayEngine;
@@ -14,7 +16,7 @@ namespace OsuSpectate.GameplaySource
     {
         
         public OsuStandardBeatmap Beatmap;
-
+        private BeatmapManager Manager;
         private SortedDictionary<TimeSpan, int> ReplayFrameIndex;
         private List<TimeSpan> ReplayFrameIndexKeys;
         private SortedDictionary<TimeSpan, int> LifeFrameIndex;
@@ -27,7 +29,13 @@ namespace OsuSpectate.GameplaySource
 
         public OsuStandardReplay(string replayFile, OsuStandardBeatmap beatmap, bool fullLoad = false) : base(replayFile, fullLoad)
         {
+            ReadFile();
             Beatmap = beatmap;
+            Manager = new BeatmapManager(Beatmap);
+            Manager.SetMods(GetMods());
+            var SliderCalc = Manager.SliderCalculations();
+            Manager.CalculateDifficlty();
+            Manager.CalculateStacking();
             ReplayFrameIndex = new SortedDictionary<TimeSpan, int>();
             for (int i = 0; i < ReplayFrames.Count(); i++)
             {
@@ -36,13 +44,13 @@ namespace OsuSpectate.GameplaySource
             ReplayFrameIndexKeys = ReplayFrameIndex.Keys.ToList();
 
             LifeFrameIndex = new SortedDictionary<TimeSpan,int>();
-            for (int i = 0; i < LifeFrames.Count(); i++)
+            for (int i = 0; i <LifebarFrames.Count(); i++)
             {
-                LifeFrameIndex[new TimeSpan(LifeFrames.ElementAt(i).Time * TimeSpan.TicksPerMillisecond)] = i;
+                LifeFrameIndex[new TimeSpan(LifebarFrames.ElementAt(i).Time * TimeSpan.TicksPerMillisecond)] = i;
             }
             LifeFrameIndexKeys = LifeFrameIndex.Keys.ToList();
 
-
+            while (!SliderCalc.IsCompleted) { }
             GameplayEngine = new OsuStandardGameplayEngine(this);
             
             for( int i=1; i<ReplayFrames.Count;i++)
@@ -50,42 +58,42 @@ namespace OsuSpectate.GameplaySource
                 bool added = false;
                 if (ReplayFrames[i].Keys!= ReplayFrames[i-1].Keys)
                 {
-                    if (ReplayFrames[i].Keys == ReplayAPI.Keys.None)
+                    if (ReplayFrames[i].Keys == ReplayKeys.None)
                     {
                         new ReplayReleaseEvent(ReplayFrames[i]);
                     }
                     else
                     {
-                        if (ReplayFrames[i].Keys.HasFlag(Keys.K1))
+                        if (ReplayFrames[i].Keys.HasFlag(ReplayKeys.K1))
                         {
-                            if (!ReplayFrames[i-1].Keys.HasFlag(Keys.K1))
+                            if (!ReplayFrames[i-1].Keys.HasFlag(ReplayKeys.K1))
                             {
                                 if(!added)
                                     GameplayEngine.AddClickEvent(ReplayFrames[i]);
                                 added = true;
                             }
                         }
-                        if (ReplayFrames[i].Keys.HasFlag(Keys.K2))
+                        if (ReplayFrames[i].Keys.HasFlag(ReplayKeys.K2))
                         {
-                            if (!ReplayFrames[i - 1].Keys.HasFlag(Keys.K2))
+                            if (!ReplayFrames[i - 1].Keys.HasFlag(ReplayKeys.K2))
                             {
                                 if (!added)
                                     GameplayEngine.AddClickEvent(ReplayFrames[i]);
                                 added = true;
                             }
                         }
-                        if (ReplayFrames[i].Keys.HasFlag(Keys.M1))
+                        if (ReplayFrames[i].Keys.HasFlag(ReplayKeys.M1))
                         {
-                            if (!ReplayFrames[i - 1].Keys.HasFlag(Keys.M1))
+                            if (!ReplayFrames[i - 1].Keys.HasFlag(ReplayKeys.M1))
                             {
                                 if (!added)
                                     GameplayEngine.AddClickEvent(ReplayFrames[i]);
                                 added = true;
                             }
                         }
-                        if (ReplayFrames[i].Keys.HasFlag(Keys.M2))
+                        if (ReplayFrames[i].Keys.HasFlag(ReplayKeys.M2))
                         {
-                            if (!ReplayFrames[i - 1].Keys.HasFlag(Keys.M2))
+                            if (!ReplayFrames[i - 1].Keys.HasFlag(ReplayKeys.M2))
                             {
                                 if (!added)
                                     GameplayEngine.AddClickEvent(ReplayFrames[i]);
@@ -96,23 +104,24 @@ namespace OsuSpectate.GameplaySource
                     }
                 }
             }
-            for (int i = 0; i < (Beatmap).GetHitObjectCount(); i++)
+
+            List<HitObject> ModdedHitObjects = Manager.GetHitObjects();
+            for (int i = 0; i < ModdedHitObjects.Count; i++)
             {
-                OsuStandardHitObject ho = (Beatmap).GetHitObject(i, Mods);
-                if (ho.getType() == "slider")
+                HitObject ho = ModdedHitObjects.ElementAt(i);
+                if (ho.Type.HasFlag(HitObjectType.Slider))
                 {
-                    Beatmap.GetSliderTexture((OsuStandardSlider)ho, GetMods());
+                    Beatmap.GetSliderTexture((Slider)ho, GetMods());
                 }
             }
-            //sliderRenderer.RunWorkerAsync(Beatmap);
         }
         public string GetPlayerName()
         {
-            return PlayerName;
+            return UserName;
         }
         public Mods GetMods()
         {
-            return Mods;
+            return Enabled_Mods;
         }
         public OsuStandardGameplayFrame GetGameplayFrame(TimeSpan t)
         {
@@ -157,8 +166,7 @@ namespace OsuSpectate.GameplaySource
             float timeScale = (milliseconds * 1.0F - (float)Frame1.Time * 1.0F) / ((float)Frame2.Time * 1.0F - (float)Frame1.Time * 1.0F);
             ReplayFrame ResultFrame = Frame1;
             ResultFrame.Time=   (int) milliseconds;
-            ResultFrame.X = timeScale * Frame2.X + (1 - timeScale) * Frame1.X;
-            ResultFrame.Y = timeScale * Frame2.Y + (1 - timeScale) * Frame1.Y;
+            ResultFrame.Position = osuElements.Position.Lerp(Frame2.Position, Frame1.Position,timeScale);
             return ResultFrame;
         }
 
@@ -198,6 +206,11 @@ namespace OsuSpectate.GameplaySource
         public List<RenderObject> GetRenderList()
         {
             return GameplayEngine.getRenderList();
+        }
+
+        public BeatmapManager GetBeatmapManager()
+        {
+            return Manager;
         }
     }
 }

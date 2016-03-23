@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using ReplayAPI;
+using OsuSpectate.Beatmap;
 
 namespace OsuSpectate
 {
@@ -13,10 +13,7 @@ namespace OsuSpectate
     {
         public static void Main(string[] args)
         {
-            Keys k = Keys.M2;
-            k.HasFlag(Keys.K2);
-            Console.WriteLine(((((int)k) / 5) & 2));
-            Console.ReadKey();
+            new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\399372 BABYMETAL - Road of Resistance\BABYMETAL - Road of Resistance (Monstrata) [Rebellion].osu");
         }
         enum Color
         {

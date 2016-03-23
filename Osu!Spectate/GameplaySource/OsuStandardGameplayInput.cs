@@ -11,7 +11,9 @@ using OsuSpectate.GameplaySource;
 using OsuSpectate.Skin;
 using OsuSpectate.View;
 
-using ReplayAPI;
+using osuElements.Replays;
+using osuElements.Helpers;
+using osuElements.Beatmaps;
 using OsuSpectate.GameplayEngine;
 
 namespace OsuSpectate.GameplaySource
@@ -20,7 +22,7 @@ namespace OsuSpectate.GameplaySource
     {
         string GetPlayerName();
         Mods GetMods();
-
+        BeatmapManager GetBeatmapManager();
         OsuStandardGameplayFrame GetGameplayFrame(TimeSpan time);
         OsuStandardGameplayFrame GetGameplayFrame(long milliseconds);
         ReplayFrame GetReplayFrame(TimeSpan time);
@@ -31,8 +33,7 @@ namespace OsuSpectate.GameplaySource
         TimeSpan GetOD50Milliseconds();
         TimeSpan GetARMilliseconds();
         float GetCSRadius();
-
-        OsuStandardBeatmap GetBeatmap();
+        
         void HandleUntil(TimeSpan time);
 
         List<RenderObject> GetRenderList();

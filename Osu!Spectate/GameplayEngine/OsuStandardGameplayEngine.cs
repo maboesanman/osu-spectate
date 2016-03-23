@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 
 using OsuSpectate.Beatmap;
 using OsuSpectate.GameplaySource;
-using ReplayAPI;
+
+using osuElements.Beatmaps;
+using osuElements.Helpers;
+using osuElements.Replays;
 
 namespace OsuSpectate.GameplayEngine
 {
@@ -17,34 +20,34 @@ namespace OsuSpectate.GameplayEngine
         Tree<OsuStandardGameplayFrame> gameplayFrames;
         Tree<GameplayObject> objectList;
         List<RenderObject> renderList;
-        OsuStandardBeatmap beatmap;
+        BeatmapManager beatmapManager;
         Mods activeMods;
         OsuStandardGameplayInput gameplayInput;
 
         public OsuStandardGameplayEngine(OsuStandardGameplayInput gi)
         {
             gameplayInput = gi;
-            beatmap = gi.GetBeatmap();
+            beatmapManager = gi.GetBeatmapManager();
             activeMods = gi.GetMods();
             eventList = new Tree<GameplayEvent>();
             gameplayFrames = new Tree<OsuStandardGameplayFrame>();
             gameplayFrames.Add(new OsuStandardGameplayFrame(TimeSpan.Zero));
             objectList = new Tree<GameplayObject>();
             renderList = new List<RenderObject>();
-            var numberList = Enumerable.Range(0, beatmap.GetHitObjectCount()).ToList();
-            numberList = numberList.OrderBy(a => Guid.NewGuid()).ToList();
-            for (int i = 0; i < beatmap.GetHitObjectCount(); i++)
+            List<HitObject> ModdedHitObjects = beatmapManager.GetHitObjects();
+            for (int i = 0; i < ModdedHitObjects.Count; i++)
             {
-                OsuStandardHitObject ho = beatmap.GetHitObject(numberList[i], activeMods);
-                switch (ho.getType())
+                HitObject ho = ModdedHitObjects.ElementAt(i);
+                switch (ho.Type)
                 {
-                    case ("hitcircle"):
-                        new GameplayHitCircle((OsuStandardHitCircle)ho, this, objectList, renderList, eventList);
+                    case (HitObjectType.HitCircle):
+                        new GameplayHitCircle((HitCircle)ho, this, objectList, renderList, eventList);
                         break;
-                    case ("slider"):
-                        //beatmap.GenerateSliderTexture((OsuStandardSlider)ho,getMods());
-                        new RenderSliderBeginEvent((OsuStandardSlider)ho, eventList, renderList, this);
-                        new GameplaySlider((OsuStandardSlider)ho, this, objectList, renderList, eventList);
+                    case (HitObjectType.Slider):
+                        
+                        ((OsuStandardBeatmap)(beatmapManager.GetBeatmap())).GenerateSliderTexture((Slider)ho,getMods());
+                        new RenderSliderBeginEvent((Slider)ho, eventList, renderList, this);
+                        new GameplaySlider((Slider)ho, this, objectList, renderList, eventList);
                         break;
 
                 }
@@ -71,7 +74,7 @@ namespace OsuSpectate.GameplayEngine
             }
         }
     
-        public void AddClickEvent(ReplayAPI.ReplayFrame frame)
+        public void AddClickEvent(ReplayFrame frame)
         {
             new ReplayClickEvent(frame, eventList, objectList, renderList, this);
         }
@@ -85,23 +88,23 @@ namespace OsuSpectate.GameplayEngine
         }
         public TimeSpan GetOD300Milliseconds()
         {
-            return beatmap.GetOD300Milliseconds(activeMods);
+            return TimeSpan.FromMilliseconds(beatmapManager.HitWindow300);
         }
         public TimeSpan GetOD100Milliseconds()
         {
-            return beatmap.GetOD100Milliseconds(activeMods);
+            return TimeSpan.FromMilliseconds(beatmapManager.HitWindow100);
         }
         public TimeSpan GetOD50Milliseconds()
         {
-            return beatmap.GetOD50Milliseconds(activeMods);
+            return TimeSpan.FromMilliseconds(beatmapManager.HitWindow50);
         }
         public TimeSpan GetARMilliseconds()
         {
-            return beatmap.GetARMilliseconds(activeMods);
+            return TimeSpan.FromMilliseconds(beatmapManager.PreEmpt);
         }
         public float GetCSRadius()
         {
-            return beatmap.GetCSRadius(activeMods);
+            return beatmapManager.HitObjectRadius;
         }
         public Mods getMods()
         {
@@ -113,7 +116,7 @@ namespace OsuSpectate.GameplayEngine
         }
         public OsuStandardBeatmap getBeatmap()
         {
-            return beatmap;
+            return (OsuStandardBeatmap)(beatmapManager.GetBeatmap());
         }
         public ReplayFrame getReplayFrame(TimeSpan t)
         {
