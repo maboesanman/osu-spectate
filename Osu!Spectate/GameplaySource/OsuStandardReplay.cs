@@ -22,7 +22,7 @@ namespace OsuSpectate.GameplaySource
         private SortedDictionary<TimeSpan, int> LifeFrameIndex;
         private List<TimeSpan> LifeFrameIndexKeys;
 
-        private OsuStandardGameplayEngine GameplayEngine;
+        public OsuStandardGameplayEngine GameplayEngine;
         
         TimeSpan CurrentTime;
         
@@ -33,7 +33,7 @@ namespace OsuSpectate.GameplaySource
             Beatmap = beatmap;
             Manager = new BeatmapManager(Beatmap);
             Manager.SetMods(GetMods());
-            var SliderCalc = Manager.SliderCalculations();
+            Manager.SliderCalculations();
             Manager.CalculateDifficlty();
             Manager.CalculateStacking();
             ReplayFrameIndex = new SortedDictionary<TimeSpan, int>();
@@ -49,8 +49,6 @@ namespace OsuSpectate.GameplaySource
                 LifeFrameIndex[new TimeSpan(LifebarFrames.ElementAt(i).Time * TimeSpan.TicksPerMillisecond)] = i;
             }
             LifeFrameIndexKeys = LifeFrameIndex.Keys.ToList();
-
-            while (!SliderCalc.IsCompleted) { }
             GameplayEngine = new OsuStandardGameplayEngine(this);
             
             for( int i=1; i<ReplayFrames.Count;i++)
@@ -60,7 +58,7 @@ namespace OsuSpectate.GameplaySource
                 {
                     if (ReplayFrames[i].Keys == ReplayKeys.None)
                     {
-                        new ReplayReleaseEvent(ReplayFrames[i]);
+                        GameplayEngine.AddReleaseEvent(ReplayFrames[i]);
                     }
                     else
                     {
@@ -135,6 +133,7 @@ namespace OsuSpectate.GameplaySource
 
         public ReplayFrame GetReplayFrame(TimeSpan time)
         {
+            
             int index = ReplayFrameIndexKeys.BinarySearch(time);
             TimeSpan KeyPrevious = new TimeSpan(0);
             TimeSpan KeyNext = new TimeSpan(0);
@@ -166,7 +165,8 @@ namespace OsuSpectate.GameplaySource
             float timeScale = (milliseconds * 1.0F - (float)Frame1.Time * 1.0F) / ((float)Frame2.Time * 1.0F - (float)Frame1.Time * 1.0F);
             ReplayFrame ResultFrame = Frame1;
             ResultFrame.Time=   (int) milliseconds;
-            ResultFrame.Position = osuElements.Position.Lerp(Frame2.Position, Frame1.Position,timeScale);
+            //ResultFrame.Position = osuElements.Position.Lerp(Frame1.Position, Frame2.Position,timeScale);
+            ResultFrame.Position = Frame1.Position;
             return ResultFrame;
         }
 

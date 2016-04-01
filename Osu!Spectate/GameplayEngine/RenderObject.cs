@@ -208,7 +208,10 @@ namespace OsuSpectate.GameplayEngine
             position = c.EndPosition;
             if (c.Type == osuElements.Helpers.HitObjectType.Slider)
             {
-                position = ((Slider)c).PositionAtTime(c.EndTime);
+                if(((Slider)c).SegmentCount%2==0)
+                {
+                    position = c.StartPosition;
+                }
             }
             eventList.Add(new Render300EndEvent(this, renderList));
             eventList.Add(new Render300BeginEvent(this, renderList));
@@ -241,7 +244,10 @@ namespace OsuSpectate.GameplayEngine
             position = c.EndPosition;
             if (c.Type == osuElements.Helpers.HitObjectType.Slider)
             {
-                position = ((Slider)c).PositionAtTime(c.EndTime);
+                if (((Slider)c).SegmentCount % 2 == 0)
+                {
+                    position = c.StartPosition;
+                }
             }
             eventList.Add(new Render100EndEvent(this, renderList));
             eventList.Add(new Render100BeginEvent(this, renderList));
@@ -274,7 +280,10 @@ namespace OsuSpectate.GameplayEngine
             position = c.EndPosition;
             if (c.Type == osuElements.Helpers.HitObjectType.Slider)
             {
-                position = ((Slider)c).PositionAtTime(c.EndTime);
+                if (((Slider)c).SegmentCount % 2 == 0)
+                {
+                    position = c.StartPosition;
+                }
             }
             eventList.Add(new Render50EndEvent(this, renderList));
             eventList.Add(new Render50BeginEvent(this, renderList));
@@ -307,7 +316,10 @@ namespace OsuSpectate.GameplayEngine
             position = c.EndPosition;
             if (c.Type == osuElements.Helpers.HitObjectType.Slider)
             {
-                position = ((Slider)c).PositionAtTime(c.EndTime);
+                if (((Slider)c).SegmentCount % 2 == 0)
+                {
+                    position = c.StartPosition;
+                }
             }
             eventList.Add(new RenderMissEndEvent(this, renderList));
             eventList.Add(new RenderMissBeginEvent(this, renderList));

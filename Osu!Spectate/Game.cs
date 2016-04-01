@@ -16,6 +16,9 @@ using OsuSpectate.GameplaySource;
 using OsuSpectate.Skin;
 using OsuSpectate.View;
 
+using osuElements.Db;
+using osuElements.Replays;
+
 namespace OsuSpectate
 {
     public class Game : GameWindow
@@ -25,14 +28,23 @@ namespace OsuSpectate
         AudioPlayer Audio;
         OsuStandardBeatmap Beatmap;
         Stopwatch timer = new Stopwatch();
+        OsuDb songDB;
         //
         //
-        //TimeSpan offset = TimeSpan.FromSeconds(86) + TimeSpan.FromSeconds(24) + TimeSpan.FromSeconds(155);
         TimeSpan offset = TimeSpan.Zero;
-        float rate = 1.5f;
+        
+        float rate = 1.0f;
+        float modRate = 1.0f;
         public Game(int w, int h)
             : base(w, h)
         {
+
+            //offset = offset + TimeSpan.FromSeconds(20);
+            //offset = offset + TimeSpan.FromSeconds(24);
+            //offset = offset + TimeSpan.FromSeconds(155);
+            songDB = new OsuDb();
+            Console.WriteLine("Finished Reading osu.db");
+            songDB.ReadFile();
             GL.Enable(EnableCap.Texture2D);
             GameplayInputList = new List<OsuStandardGameplayInput>();
             MyArrangement = new ViewArrangement();
@@ -42,39 +54,54 @@ namespace OsuSpectate
 
         protected override void OnLoad(EventArgs e)
         {
+            
             base.OnLoad(e);
             base.Title = "osu!spectate";
+            string ReplayPath = @"C:\Program Files (x86)\osu!\Replays\rrtyui - The Quick Brown Fox - The Big Black [WHO'S AFRAID OF THE BIG BLACK] (2014-05-17) Osu.osr";
+            OsuSkin Skin= new OsuSkin(@"C:\Program Files (x86)\osu!\Skins\Aesthetic\", true);
+            Replay temp = new Replay(ReplayPath, false);
+            DbBeatmap dbb = songDB.FindHash(temp.BeatmapHash);
+            Beatmap = new OsuStandardBeatmap(dbb.FullPath);
+            temp = null;
+            dbb = null;
+            GameplayInputList.Add(new OsuStandardReplay(ReplayPath, Beatmap, true));
+            if (GameplayInputList.ElementAt(0).GetMods().HasFlag(osuElements.Helpers.Mods.DoubleTime))
+            {
+                modRate = 1.5f;
+            }
+            if (GameplayInputList.ElementAt(0).GetMods().HasFlag(osuElements.Helpers.Mods.HalfTime))
+            {
+                modRate = .75f;
+            }
 
-            OsuSkin Skin = new OsuSkin(@"C:\Program Files (x86)\osu!\Skins\Aesthetic\", true);
-            //OsuSkin Skin = new OsuSkin(@"\\", true);
-            Beatmap = new OsuStandardBeatmap(@"C:\Program Files (x86)\osu!\Songs\53857 Saiya - Remote Control\Saiya - Remote Control (Garven) [Insane].osu");
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\hvick225 - Saiya - Remote Control [Insane] (2014-08-17) Osu.osr", Beatmap, true));
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\rrtyui - Saiya - Remote Control [Insane] (2015-03-06) Osu.osr", Beatmap, true));
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Rafis - Saiya - Remote Control [Insane] (2015-12-27) Osu.osr", Beatmap, true));
-            GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - Saiya - Remote Control [Insane] (2015-12-31) Osu.osr", Beatmap, true));
+            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\rrtyui - Saiya - Remote Control [Insane] (2015-03-06) Osu.osr", Beatmap, true));
+            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Rafis - Saiya - Remote Control [Insane] (2015-12-27) Osu.osr", Beatmap, true));
+            //GameplayInputList.Add(new OsuStandardReplay(@"C:\Program Files (x86)\osu!\Replays\Cookiezi - Saiya - Remote Control [Insane] (2015-12-31) Osu.osr", Beatmap, true));
 
             MyArrangement.Views.Add(new ViewContainer(-1f, -1f, 2f, 2f, new SongBackgroundView(Beatmap, .8f, Color.Black, BackgroundImageFitType.MAXIMUM_FIT)));
 
-            OsuStandardBalancedMultiView multiview = new OsuStandardBalancedMultiView();
+            OsuStandardBalancedMultiView multiview = new OsuStandardBalancedMultiView(true, false,false);
 
             MyArrangement.Views.Add(new ViewContainer(-1f, -1f, 2f, 2f, multiview));
 
             multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio));
-            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio));
-            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio));
-            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio));
-            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio));
-            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[3], Skin, Audio));
-            multiview.views.Add(new OsuStandardGameplayView(Beatmap, GameplayInputList[3], Skin, Audio));
+            
+            /*
+            GameplayInputList[0].HandleUntil(TimeSpan.FromDays(1));
+            ((OsuStandardReplay)GameplayInputList[0]).GameplayEngine.OffsetList.Sort();
+            for(int i=0;i< ((OsuStandardReplay)GameplayInputList[0]).GameplayEngine.OffsetList.Count;i++)
+            {
+                Console.WriteLine(((OsuStandardReplay)GameplayInputList[0]).GameplayEngine.OffsetList[i].TotalMilliseconds);
+            }
+            Console.WriteLine();
+            Console.WriteLine(((OsuStandardReplay)GameplayInputList[0]).GameplayEngine.GetOD300Milliseconds().TotalMilliseconds);
+            Console.WriteLine(((OsuStandardReplay)GameplayInputList[0]).GameplayEngine.GetOD100Milliseconds().TotalMilliseconds);
+            Console.WriteLine(((OsuStandardReplay)GameplayInputList[0]).GameplayEngine.GetOD50Milliseconds().TotalMilliseconds);
 
-
-            //MyArrangement.Views.Add(new ViewContainer(-1.0f, -1.0f, 1.0f, 1.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[0], Skin, Audio)));
-            //MyArrangement.Views.Add(new ViewContainer(0.0f, -1.0f, 1.0f, 1.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
-            //MyArrangement.Views.Add(new ViewContainer(-1.0f, 0.0f, 1.0f, 1.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio)));
-            //MyArrangement.Views.Add(new ViewContainer(0.0f, 0.0f, 1.0f, 1.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[3], Skin, Audio)));
-            //MyArrangement.Views.Add(new ViewContainer(-1.0f + 2.0f / 3, -1.0f, 2.0f / 3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[1], Skin, Audio)));
-            //MyArrangement.Views.Add(new ViewContainer(-1.0f+ 4.0f / 3, -1.0f, 2.0f/3, 2.0f, new OsuStandardGameplayView(Beatmap, GameplayInputList[2], Skin, Audio)));
-            Audio = new AudioPlayer(GameplayInputList[0],rate);
+            Console.ReadKey();
+            */
+            Audio = new AudioPlayer(GameplayInputList[0],rate*modRate);
+            
             timer.Start();
             //VSync = VSyncMode.Off;
             //WindowState = WindowState.Fullscreen;
@@ -96,9 +123,9 @@ namespace OsuSpectate
             GL.ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             for (int i=0;i<GameplayInputList.Count;i++)
             {
-                GameplayInputList.ElementAt(i).HandleUntil(TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds * rate).Add(offset));
+                GameplayInputList.ElementAt(i).HandleUntil(TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds * rate*modRate).Add(offset));
             }
-            MyArrangement.Draw(TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds * rate).Add(offset), Width,Height);
+            MyArrangement.Draw(TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds * rate*modRate).Add(offset), Width,Height);
 
             SwapBuffers();
 

@@ -23,7 +23,8 @@ namespace OsuSpectate.GameplayEngine
         BeatmapManager beatmapManager;
         Mods activeMods;
         OsuStandardGameplayInput gameplayInput;
-
+        //public TimeSpan mostRecentRelease=TimeSpan.Zero;
+        //public List<TimeSpan> OffsetList = new List<TimeSpan>(0);
         public OsuStandardGameplayEngine(OsuStandardGameplayInput gi)
         {
             gameplayInput = gi;
@@ -34,6 +35,7 @@ namespace OsuSpectate.GameplayEngine
             gameplayFrames.Add(new OsuStandardGameplayFrame(TimeSpan.Zero));
             objectList = new Tree<GameplayObject>();
             renderList = new List<RenderObject>();
+            beatmapManager.SetMods(activeMods);
             List<HitObject> ModdedHitObjects = beatmapManager.GetHitObjects();
             for (int i = 0; i < ModdedHitObjects.Count; i++)
             {
@@ -77,6 +79,10 @@ namespace OsuSpectate.GameplayEngine
         public void AddClickEvent(ReplayFrame frame)
         {
             new ReplayClickEvent(frame, eventList, objectList, renderList, this);
+        }
+        public void AddReleaseEvent(ReplayFrame frame)
+        {
+            new ReplayReleaseEvent(frame, eventList, objectList, renderList, this);
         }
         public OsuStandardGameplayFrame getGameplayFrame(TimeSpan t)
         {

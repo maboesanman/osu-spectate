@@ -86,6 +86,7 @@ namespace OsuSpectate.Beatmap
         {
             
             float scale = 1.5f;
+            
             Tuple<osuElements.Position, float>[] positions = slider.GetAllCurvePoints(1);
             PointF[] points = new PointF[positions.Length];
             float maxX = 0.0f;

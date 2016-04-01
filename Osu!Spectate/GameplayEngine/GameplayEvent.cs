@@ -81,20 +81,38 @@ namespace OsuSpectate.GameplayEngine
     }
     public class ReplayReleaseEvent : GameplayEvent
     {
-        ReplayKeys keys;
-        float x;
-        float y;
-        public ReplayReleaseEvent(ReplayFrame frame)
-            : base(new TimeSpan(frame.Time*TimeSpan.TicksPerMillisecond))
+        Tree<GameplayEvent> Parent;
+        Tree<GameplayObject> GameplayList;
+        List<RenderObject> RenderList;
+        OsuStandardGameplayEngine Engine;
+        ReplayFrame Frame;
+        public ReplayReleaseEvent(ReplayFrame frame, Tree<GameplayEvent> parent, Tree<GameplayObject> gameplayList, List<RenderObject> renderList, OsuStandardGameplayEngine engine)
+            : base(new TimeSpan(frame.Time * TimeSpan.TicksPerMillisecond))
         {
-            keys = frame.Keys;
-            x = frame.X;
-            y = frame.Y;
-
+            Parent = parent;
+            RenderList = renderList;
+            GameplayList = gameplayList;
+            Engine = engine;
+            Frame = frame;
+            Parent.Add(this);
         }
         public override void _handle()
         {
-
+            foreach (GameplayObject o in GameplayList)
+            {
+                switch (o.GetType())
+                {
+                    case ("slider tail"):
+                        Position p = ((GameplaySliderTail)o).GS.slider.PositionAtTime((float)getTime().TotalMilliseconds);
+                        if (Frame.Position.Distance(p) < 3*Engine.GetCSRadius())
+                        {
+                            Console.WriteLine("newShit");
+                            ((GameplaySliderTail)o).GS.tailHit = true;
+                            return;
+                        }
+                            break;
+                }
+            }
         }
 
         public override void _kill()
@@ -266,16 +284,15 @@ namespace OsuSpectate.GameplayEngine
     {
         GameplaySlider GS;
         Position position;
-        public SliderTickEvent(GameplaySlider gs, float p)
-            : base(TimeSpan.FromMilliseconds(gs.slider.StartTime).Add(TimeSpan.FromMilliseconds(p*gs.slider.Duration)))
+        public SliderTickEvent(GameplaySlider gs, Position p, TimeSpan t)
+            : base(t)
         {
             GS = gs;
-            position = gs.slider.PositionAt(p);
+            position = p;
         }
         public override void _handle()
         {
             ReplayFrame f = GS.engine.getReplayFrame(getTime());
-            ;
             if (f.Position.Distance(position) < 3.0f * GS.engine.GetCSRadius() & f.Keys!=ReplayKeys.None)
             {
                 //success
@@ -294,23 +311,54 @@ namespace OsuSpectate.GameplayEngine
             throw new NotImplementedException();
         }
     }
-    public class SliderTailEvent : GameplayEvent
+    public class SliderTailBeginEvent : GameplayEvent
     {
         GameplaySlider GS;
         Tree<GameplayEvent> EventList;
-        public SliderTailEvent(GameplaySlider gs, Tree<GameplayEvent> eventList)
-            : base(TimeSpan.FromMilliseconds(gs.slider.EndTime))
+        Tree<GameplayObject> GameplayList;
+        public SliderTailBeginEvent(GameplaySlider gs, Tree<GameplayObject> gameplayList, Tree<GameplayEvent> eventList)
+            : base(TimeSpan.FromMilliseconds(gs.slider.EndTime)-gs.engine.GetOD50Milliseconds())
         {
+            
             GS = gs;
+            GameplayList = gameplayList;
             EventList = eventList;
         }
         public override void _handle()
         {
-
-            
+            GameplayList.Add(GS.tail);
+        }
+        public override void _kill()
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class SliderTailEndEvent : GameplayEvent
+    {
+        GameplaySlider GS;
+        Tree<GameplayEvent> EventList;
+        Tree<GameplayObject> GameplayList;
+        public SliderTailEndEvent(GameplaySlider gs, Tree<GameplayObject> gameplayList, Tree<GameplayEvent> eventList)
+            : base(TimeSpan.FromMilliseconds(gs.slider.EndTime))
+        {
+            GS = gs;
+            GameplayList = gameplayList;
+            EventList = eventList;
+        }
+        public override void _handle()
+        {
+            GameplayList.Remove(GS.tail);
             ReplayFrame f = GS.engine.getReplayFrame(TimeSpan.FromMilliseconds(GS.slider.EndTime));
             Position p = GS.slider.EndPosition;
-            if (f.Position.Distance(p) < 3.0f*GS.engine.GetCSRadius()& f.Keys != ReplayKeys.None)
+            if (GS.slider.SegmentCount % 2 == 0)
+            {
+                p = GS.slider.StartPosition;
+            }
+            if (f.Position.Distance(p) < 3.0f * GS.engine.GetCSRadius() & f.Keys != ReplayKeys.None)
+            {
+                GS.tailHit = true;
+            }
+            if (GS.tailHit)
             {
                 //success
                 GS.items.Add(true);
@@ -320,6 +368,7 @@ namespace OsuSpectate.GameplayEngine
             {
                 //faliure
                 GS.items.Add(false);
+                //Console.WriteLine("   fail");
             }
             
             int s = 0;
