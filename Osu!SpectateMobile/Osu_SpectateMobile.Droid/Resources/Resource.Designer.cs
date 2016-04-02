@@ -26,6 +26,7 @@ namespace Osu_SpectateMobile.Droid
 		
 		public static void UpdateIdValues()
 		{
+			global::Splat.Resource.String.library_name = global::Osu_SpectateMobile.Droid.Resource.String.library_name;
 			global::Xamarin.Forms.Platform.Resource.Animation.abc_fade_in = global::Osu_SpectateMobile.Droid.Resource.Animation.abc_fade_in;
 			global::Xamarin.Forms.Platform.Resource.Animation.abc_fade_out = global::Osu_SpectateMobile.Droid.Resource.Animation.abc_fade_out;
 			global::Xamarin.Forms.Platform.Resource.Animation.abc_grow_fade_in_from_bottom = global::Osu_SpectateMobile.Droid.Resource.Animation.abc_grow_fade_in_from_bottom;
@@ -1523,6 +1524,9 @@ namespace Osu_SpectateMobile.Droid
 			
 			// aapt resource value: 0x7f030000
 			public const int Hello = 2130903040;
+			
+			// aapt resource value: 0x7f030002
+			public const int library_name = 2130903042;
 			
 			static String()
 			{
